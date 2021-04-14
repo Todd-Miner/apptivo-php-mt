@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Todd_Miner\apptivo_php_mt;
+namespace todd_miner\apptivo_php_mt;
 
 class SkeletonClass
 {

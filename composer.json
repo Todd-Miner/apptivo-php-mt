@@ -1,10 +1,10 @@
 {
-    "name": "Todd-Miner/apptivo-php-mt",
+    "name": "modd_miner/apptivo_php_mt",
     "type": "library",
     "description": "Integration tools for Apptivo API",
     "keywords": [
-        "Todd-Miner",
-        "apptivo-php-mt"
+        "Todd_Miner",
+        "apptivo_php_mt"
     ],
     "homepage": "https://github.com/Todd-Miner/apptivo-php-mt",
     "license": "MIT",
@@ -17,7 +17,8 @@
         }
     ],
     "require": {
-        "php" : "~7.2"
+        "php" : ">7.2.5",
+        "guzzlehttp/guzzle": ">7.0"
     },
     "require-dev": {
         "phpunit/phpunit" : ">=8.0",
@@ -25,7 +26,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Todd-Miner\\apptivo-php-mt\\": "src"
+            "Todd_Miner\\apptivo_php_mt\\": "src"
         }
     },
     "autoload-dev": {
