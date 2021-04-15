@@ -1,5 +1,5 @@
 {
-    "name": "modd_miner/apptivo_php_mt",
+    "name": "toddminertech/apptivo_php_mt",
     "type": "library",
     "description": "Integration tools for Apptivo API",
     "keywords": [
