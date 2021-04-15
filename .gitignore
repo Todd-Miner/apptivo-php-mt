@@ -275,10 +275,7 @@ tmtags
 .history/
 
 ##### NetBeans
-**/nbproject/private/
-**/nbproject/Makefile-*.mk
-**/nbproject/Package-*.bash
-build/
+nbproject/
 nbbuild/
 dist/
 nbdist/
@@ -473,5 +470,5 @@ composer.lock
 *.sass.map
 *.scss.map
 
-##### apptivo_php_mt
+##### apptivo_php_mt - will use index.php for testing only
 index.php
