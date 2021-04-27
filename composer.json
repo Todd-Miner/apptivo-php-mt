@@ -1,10 +1,10 @@
 {
-    "name": "toddminertech/apptivo_php_mt",
+    "name": "ToddMinerTech/ApptivoPhp",
     "type": "library",
     "description": "Integration tools for Apptivo API",
     "keywords": [
         "Todd_Miner",
-        "apptivo_php_mt"
+        "Apptivo_Php"
     ],
     "homepage": "https://github.com/Todd-Miner/apptivo-php-mt",
     "license": "MIT",
@@ -26,12 +26,12 @@
     },
     "autoload": {
         "psr-4": {
-            "ToddMinerTech\\Apptivo\\": "src"
+            "ToddMinerTech\\ApptivoPhp\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ToddMinerTech\\Apptivo\\": "tests"
+            "ToddMinerTech\\ApptivoPhp\\": "tests"
         }
     },
     "scripts": {

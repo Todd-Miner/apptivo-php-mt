@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ToddMinerTech\Apptivo;
+namespace ToddMinerTech\ApptivoPhp;
 
-use ToddMinerTech\Apptivo\AppParams;
+use ToddMinerTech\ApptivoPhp\AppParams;
 use GuzzleHttp\Psr7\Request;
 
 /**
@@ -36,14 +36,13 @@ class ApptivoController
     /**
      * getConfigById
      *
-     * @param string $appId App name, app id, or combo string for extended apps (cases-993829)
+     * @param string $appIdOrName App name, app id, or combo string for extended apps (cases-993829).
      *
      * @return object Returns object containing the configuration for the app, or null if unable to locate
      */
-    public function getConfigById(string $appId) {
-        //You can pass in an appId or appName.  If $appId is not an int then we'll get the app id from getAppParameters
-        $appParams = new AppParams($appId);
-        $appParts = explode('-',$appId);
+    public function getConfigById(string $appIdOrName) {
+        $appParams = new AppParams($appIdOrName);
+        $appParts = explode('-',$appIdOrName);
         if(count($appParts) > 1) {
             $appId = $appParts[1];
         }else{
