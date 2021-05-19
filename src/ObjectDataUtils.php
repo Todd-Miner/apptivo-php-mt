@@ -14,7 +14,7 @@ namespace ToddMinerTech\ApptivoPhp;
 class ObjectDataUtils
 {
     
-    public static function getAttrValueFromLabel(string $inputLabel, string $inputObj, object $inputConfig): string
+    public static function getAttrValueFromLabel(string $inputLabel, object $inputObj, object $inputConfig): string
     {
         //For table attributes the inputLabel should be an array: ["Table Section Name","Attribute Name"]
         //If it's a multi select field with an array value we'll return the array untouched, or we'll create a comma delimited list from the result based on the input param

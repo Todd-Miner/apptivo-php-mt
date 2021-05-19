@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace ToddMinerTech\ApptivoPhp;
 
-use Exception;
-
 /**
  * Class AppParameters
  *
@@ -40,6 +38,7 @@ class AppParams
         switch(strtolower($appNameOrId)) {
             case 59:
             case 'cases':
+            case 'case':
                 $this->objectSingularName = 'case';
                 $this->objectUrlName = 'cases';
                 $this->objectDataName = 'caseData';
@@ -52,6 +51,7 @@ class AppParams
                 break;
             case 2:
             case 'contacts':
+            case 'contact':
                 $this->objectSingularName = 'contact';
                 $this->objectUrlName = 'contacts';
                 $this->objectDataName = 'contactData';
@@ -60,6 +60,7 @@ class AppParams
                 break;
             case 3:
             case 'customers':
+            case 'customer':
                 $this->objectSingularName = 'customer';
                 $this->objectUrlName = 'customers';
                 $this->objectDataName = 'customerData';
@@ -75,6 +76,7 @@ class AppParams
                 break;
             case 8:
             case 'employees':
+            case 'employee':
                 $this->objectSingularName = 'employee';
                 $this->objectUrlName = 'employees';
                 $this->objectDataName = 'employeeData';
@@ -83,6 +85,7 @@ class AppParams
                 break;
             case 155:
             case 'estimates':
+            case 'estimate':
                 $this->objectSingularName = 'estimate';
                 $this->objectUrlName = 'estimates';
                 $this->objectDataName = 'estimateData';
@@ -91,6 +94,7 @@ class AppParams
                 break;
             case 33:
             case 'invoices':
+            case 'invoice':
                 $this->objectSingularName = 'invoice';
                 $this->objectUrlName = 'invoice';
                 $this->objectDataName = 'invoiceData';
@@ -99,6 +103,7 @@ class AppParams
                 break;
             case 13:
             case 'items':
+            case 'item':
                 $this->objectSingularName = 'item';
                 $this->objectUrlName = 'items';
                 $this->objectDataName = 'itemData';
@@ -107,6 +112,7 @@ class AppParams
                 break;
             case 4:
             case 'leads':
+            case 'lead':
                 $this->objectSingularName = 'lead';
                 $this->objectUrlName = 'leads';
                 $this->objectDataName = 'leadData';
@@ -115,6 +121,7 @@ class AppParams
                 break;
             case 11:
             case 'opportunities':
+            case 'opportunity':
                 $this->objectSingularName = 'opportunity';
                 $this->objectUrlName = 'opportunities';
                 $this->objectDataName = 'opportunityData';
@@ -123,6 +130,7 @@ class AppParams
                 break;
             case 12:
             case 'orders':
+            case 'order':
                 $this->objectSingularName = 'order';
                 $this->objectUrlName = 'orders';
                 $this->objectDataName = 'orderData';
@@ -131,6 +139,7 @@ class AppParams
                 break;
             case 88:
             case 'projects':
+            case 'project':
                 $this->objectSingularName = 'project';
                 $this->objectUrlName = 'projects';
                 $this->objectDataName = 'projectInformation';
@@ -139,6 +148,7 @@ class AppParams
                 break;
             case 160:
             case 'properties':
+            case 'property':
                 $this->objectSingularName = 'property';
                 $this->objectUrlName = 'properties';
                 $this->objectDataName = 'propertyData';
@@ -147,6 +157,7 @@ class AppParams
                 break;
             case 37:
             case 'suppliers':
+            case 'supplier':
                 $this->objectSingularName = 'supplier';
                 $this->objectUrlName = 'suppliers';
                 $this->objectDataName = 'supplierData';
@@ -155,6 +166,7 @@ class AppParams
                 break;
             case 19:
             case 'targets':
+            case 'target':
                 $this->objectSingularName = 'target';
                 $this->objectUrlName = 'targets';
                 $this->objectDataName = 'targetIdx';
@@ -169,9 +181,6 @@ class AppParams
                     $this->objectDataName = 'customAppData';
                     $this->objectIdName = 'customAppId';
                     $this->objectId = $appId;
-                }else{
-                    //If we couldn't resolve to any configuration we need to throw an exception
-                    throw new Exception('AppParams unable to identify app parameters for provided $appNameOrId value ('.$appNameOrId.')');
                 }
         }
     }
