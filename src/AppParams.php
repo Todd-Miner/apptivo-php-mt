@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ToddMinerTech\Apptivo;
+namespace ToddMinerTech\ApptivoPhp;
 
 /**
  * Class AppParameters
