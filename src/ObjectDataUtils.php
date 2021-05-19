@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ToddMinerTech\ApptivoPhp;
 
+use ToddMinerTech\DataUtils\StringUtil;
+
 /**
  * Class ObjectDataUtils
  *
@@ -28,7 +30,7 @@ class ObjectDataUtils
             $sectionAttributes = $cSection->attributes;
 
             //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
-            if( (!is_array($inputLabel)) || (is_array($inputLabel) && sComp($cSection->label,$inputLabel[0])) ) {
+            if( (!is_array($inputLabel)) || (is_array($inputLabel) && \ToddMinerTech\MinerTechDataUtils\StringUtil::sComp($cSection->label,$inputLabel[0])) ) {
                 foreach($sectionAttributes as $cAttr) {
                     if($cAttr->label) {
                         $labelName = $cAttr->label->modifiedLabel;
