@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ToddMinerTech\ApptivoPhp;
 
 use ToddMinerTech\ApptivoPhp\AppParams;
+use ToddMinerTech\ApptivoPhp\ObjectDataUtils;
 use GuzzleHttp\Psr7\Request;
 
 /**
@@ -40,7 +41,8 @@ class ApptivoController
      *
      * @return object Returns object containing the configuration for the app, or null if unable to locate
      */
-    public function getConfigById(string $appIdOrName) {
+    public function getConfigData(string $appIdOrName): object
+    {
         $appParams = new AppParams($appIdOrName);
         $appParts = explode('-',$appIdOrName);
         if(count($appParts) > 1) {
@@ -76,5 +78,11 @@ class ApptivoController
             }
         }
         return null;
+    }
+    
+    public function getAttrValueFromLabel(string $inputLabel,object $inputObj, string $appNameOrId): string 
+    {
+        $configData = $this->getConfigData($appNameOrId);
+        return \ToddMinerTech\Apptivo\ObjectDataUtils::getAttrValueFromLabel($inputLabel, $inputObj, $configData);
     }
 }
