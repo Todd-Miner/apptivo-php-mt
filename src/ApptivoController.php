@@ -43,7 +43,7 @@ class ApptivoController
      */
     public function getConfigData(string $appIdOrName): object
     {
-        $appParams = new \ToddMinerTech\Apptivo\AppParams($appIdOrName);
+        $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appIdOrName);
         $appParts = explode('-',$appIdOrName);
         if(count($appParts) > 1) {
             $appId = $appParts[1];
@@ -83,6 +83,6 @@ class ApptivoController
     public function getAttrValueFromLabel(string $inputLabel,object $inputObj, string $appNameOrId): string 
     {
         $configData = $this->getConfigData($appNameOrId);
-        return \ToddMinerTech\Apptivo\ObjectDataUtils::getAttrValueFromLabel($inputLabel, $inputObj, $configData);
+        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getAttrValueFromLabel($inputLabel, $inputObj, $configData);
     }
 }
