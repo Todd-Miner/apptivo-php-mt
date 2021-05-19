@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ToddMinerTech\ApptivoPhp;
 
+use Exception;
+
 /**
  * Class AppParameters
  *
@@ -167,6 +169,9 @@ class AppParams
                     $this->objectDataName = 'customAppData';
                     $this->objectIdName = 'customAppId';
                     $this->objectId = $appId;
+                }else{
+                    //If we couldn't resolve to any configuration we need to throw an exception
+                    throw new Exception('AppParams unable to identify app parameters for provided $appNameOrId value ('.$appNameOrId.')');
                 }
         }
     }
