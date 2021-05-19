@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ToddMinerTech\ApptivoPhp;
 
+use Exception;
 use ToddMinerTech\DataUtils\StringUtil;
 
 /**
@@ -30,10 +31,18 @@ class ObjectDataUtils
             $sectionAttributes = $cSection->attributes;
 
             //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
-            if( (!is_array($inputLabel)) || (is_array($inputLabel) && \ToddMinerTech\MinerTechDataUtils\StringUtil::sComp($cSection->label,$inputLabel[0])) ) {
+            if( (!is_array($inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($cSection->label,$inputLabel[0])) ) {
                 foreach($sectionAttributes as $cAttr) {
                     if($cAttr->label) {
-                        $labelName = $cAttr->label->modifiedLabel;
+                        if(isset($cAttr->label->modifiedLabel)) {
+                            $labelName = $cAttr->label->modifiedLabel;
+                        }else{
+                            if(isset($cAttr->modifiedLabel)) {
+                                $labelName = $cAttr->modifiedLabel;
+                            }else{
+                                throw new Exception('objectDataUtils: getAttrValueFromLabel: unable to locate the modifiedLabel attribute of this cAttr json ('.json_encode($cAttr));
+                            }
+                        }
                         $attributeType = $cAttr->type;
                         if(!isset($cAttr->attributeTag) || $cAttr->attributeTag == null) {
                             $attributeTag = $cAttr->right[0]->tag;
@@ -49,7 +58,7 @@ class ObjectDataUtils
                         $selectedValues = [];
                         if($attributeType == 'Custom') {
                             //This is a potential attribute.  Now let's find the attribute with the matching label.  Both conditions for regular attribute and attribute in table
-                            if( $cAttr->isEnabled && ( (!is_array($inputLabel) && sComp($labelName,$inputLabel)) || (is_array($inputLabel) && sComp($labelName,$inputLabel[1])) ) ) {
+                            if( $cAttr->isEnabled && ( (!is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel[1])) ) ) {
                                 //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
                                 $matchedAttr = $cAttr;
                                 $foundAttr = true;
