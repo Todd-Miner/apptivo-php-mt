@@ -103,7 +103,7 @@ class ObjectCrud
             $objIdStr = '&objectId='.$appParams->objectId;
         }
         
-        $customAttrString = '';
+        $customAttrString = '&isCustomAttributesUpdate=';
         if($isCustomAttributeUpdate) {
             $customAttrString = '&isCustomAttributesUpdate=true';
         }    
@@ -144,10 +144,16 @@ class ObjectCrud
                 $returnObj = $decodedApiResponse->data;
             } else if ($decodedApiResponse && isset($decodedApiResponse->responseObject)) {
                 $returnObj = $decodedApiResponse->responseObject;
+            } else if ($decodedApiResponse && isset($decodedApiResponse->customer)) {
+                $returnObj = $decodedApiResponse->customer;
+                //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
             }
             if($returnObj) {
                 break;
             }
+        }
+        if(!$returnObj) {
+            throw new Exception('ApptivoPHP: ObjectCrud: update - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')');
         }
         return $returnObj;
     }

@@ -302,11 +302,11 @@ class ObjectDataUtils
             break;
             case 'counter':
                 //Expected to be 'Auto generated number'
-                $newAttr->customAttributeValue = $inputValue;
+                $newAttr->customAttributeValue = $inputValue[0];
             break;
             case 'currency':
                 if($inputValue) {
-                    $newAttr->customAttributeValue = $inputValue;
+                    $newAttr->customAttributeValue = $inputValue[0];
                     $newAttr->fieldType = 'NUMBER';
                     $newAttr->currencyCode = 'USD'; //hard-coded for now
                 }else{
@@ -315,10 +315,10 @@ class ObjectDataUtils
                 }
             break;
             case 'date':
-                $newAttr->customAttributeValue = $inputValue;
+                $newAttr->customAttributeValue = $inputValue[0];
                 if($inputValue) {
                     //Assuming inputval is m/d/Y, convert to Y-m-d 
-                    //$newAttr->dateValue = date('Y-m-d',strtotime($inputValue)).' 00:00:00';
+                    //$newAttr->dateValue = date('Y-m-d',strtotime($inputValue[0])).' 00:00:00';
                     $newAttr->fieldType = 'NUMBER';
                     $newAttr->attributeValues = [];
                 }else{
@@ -326,7 +326,7 @@ class ObjectDataUtils
                 }
             break;
             case 'input':
-                $newAttr->customAttributeValue = $inputValue;
+                $newAttr->customAttributeValue = $inputValue[0];
                 $newAttr->fieldType = 'NUMBER';
             break;
             case 'multiSelect':
@@ -350,8 +350,8 @@ class ObjectDataUtils
                 }
             break;
             case 'number':
-                $newAttr->customAttributeValue = $inputValue;
-                $newAttr->numberValue = $inputValue;
+                $newAttr->customAttributeValue = $inputValue[0];
+                $newAttr->numberValue = $inputValue[0];
                 $newAttr->fieldType = 'NUMBER';
             break;
             case 'reference':
@@ -426,7 +426,7 @@ class ObjectDataUtils
                 }
             break;
             case 'textarea':
-                $newAttr->customAttributeValue = $inputValue;
+                $newAttr->customAttributeValue = $inputValue[0];
                 $newAttr->attributeValues = [];
             break;
         }

@@ -66,7 +66,7 @@ class UpdateUtil
             $tagName = $attrDetails->settingsAttrObj->tagName;
         }
         $needsNewAttribute = false;
-        if(!$attrDetails->attrValue) {
+        if(!$attrDetails->attrObj) {
             log::debug('checkAndUpdateFieldWithValue: This value is not present yet, we need to create a new attribute object to insert into our object.');
             if($attrDetails->settingsAttrObj->type == 'Standard') {
                 $this->attributeIds = ArrUtil::addArrIfNew($attrDetails->settingsAttrObj->attributeId, $this->attributeIds);
