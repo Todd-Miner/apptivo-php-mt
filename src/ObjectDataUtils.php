@@ -54,22 +54,24 @@ class ObjectDataUtils
                     switch($settingsAttrObj->attributeTag) {
                         case 'multiSelect':
                         case 'check':
-                            $attributeDetails->attrValue = $inputObj->customAttributes[$i]->attributeValues;
+                            if(isset($inputObj->customAttributes[$i]->attributeValues)) {
+                                //IMPROVEMENT - finish adding code to parse into comma delimited list of text values.
+                                $attributeDetails->attrValue = json_encode($inputObj->customAttributes[$i]->attributeValues);
+                            }
                             return $attributeDetails;
                         break;
                         case 'currency':
                         case 'date':
                         case 'input':
                         case 'link':
-                            $attributeDetails->attrValue = $inputObj->customAttributes[$i]->customAttributeValue;
-                            return $attributeDetails;
-                        break;
                         case 'number':
                         case 'reference':
                         case 'referenceField':
                         case 'select':
                         case 'textarea':
-                            $attributeDetails->attrValue = $inputObj->customAttributes[$i]->customAttributeValue;
+                            if(isset($inputObj->customAttributes[$i]->customAttributeValue)) {
+                                $attributeDetails->attrValue = $inputObj->customAttributes[$i]->customAttributeValue;
+                            }
                             return $attributeDetails;
                         break;
                         default:
