@@ -103,7 +103,7 @@ class UpdateUtil
                         }
                     }
                 }else{
-                    if(!$newValue[0] || !StringUtil::sComp($attrDetails->attrValue, $newValue[0])) {
+                    if(!StringUtil::sComp($attrDetails->attrValue, $newValue[0])) {
                         log::debug('checkAndUpdateFieldWithValue: Different value detected for single value field.  Will update complete attriubte.  Existing value: '.$attrDetails->attrValue.'    New Value: '.$newValue[0]);
                         $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
                         $this->object->customAttributes[$attrDetails->attrIndex] = $newAttrObj;
