@@ -35,6 +35,9 @@ class ObjectDataUtils
      */
     public static function getAttrDetailsFromLabel(array $inputLabel, object $inputObj, object $appConfig): ?object
     {
+        if(!$inputObj || !isset($inputObj->customAttributes) || !$inputObj->customAttributes) {
+            throw new Exception('ApptivoPhP: getAttrDetailsFromLabel: Invalid $inputObj provided.  Object is null, missing, or has empty customAttributes.');
+        }
         $settingsAttrObj = self::getSettingsAttrObjectFromLabel($inputLabel, $appConfig);
         //Now check if the attribute id exists in this object 
         //IMPROVEMENT extract this into a real object since it got more complicated than expected
