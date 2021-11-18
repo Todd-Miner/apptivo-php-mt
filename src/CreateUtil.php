@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ToddMinerTech\ApptivoPhp;
 
+use Exception;
 use Google\Cloud\Logging\LoggingClient;
 use Illuminate\Support\Facades\Log;
 use ToddMinerTech\DataUtils\StringUtil;
@@ -23,7 +24,7 @@ class CreateUtil
     /**  @var string $appNameOrId The Apptivo app name or id of this object */
     public $appNameOrId = null;
     /**  @var object $object The Apptivo API object to be created */
-    public $object = null;
+    private $object = null;
     /**  @var int $tableAttrIndex Index value within customAttributes that locates the targeted custom attribute table */
     public $tableAttrIndex = null;
     /**  @var array $tableRowsArr The array of rows in the targeted custom attributes table */
@@ -57,12 +58,19 @@ class CreateUtil
      */
     public function setAttributeValue(array $fieldLabel, array $newValue): void
     {
-        $attrDetails = $this->aApi->getAttrDetailsFromLabel($fieldLabel, $this->object, $this->appNameOrId);
-        if(isset($attrDetails->settingsAttrObj->tagName)) {
-            $tagName = $attrDetails->settingsAttrObj->tagName;
+        //Otherwise set the value by detecting if this is a standard or custom attribute first
+        $settingsAttrObj = $this->aApi->getAttrSettingsObjectFromLabel($fieldLabel, $this->appNameOrId);
+        if(isset($settingsAttrObj->tagName)) {
+            $tagName = $settingsAttrObj->tagName;
         }
-        if($attrDetails->settingsAttrObj->type == 'Standard') {
-            $this->object->$tagName = $attrDetails->attrValue;
+        if($settingsAttrObj->type == 'Standard') {
+            //IMPROVEMENT Need to add proper support for multi select standard attributes like we support for custom attributes below.  For now we only support 1 input value for standard.
+            //IMPROVEMENT Consider some method to take care of associated fields.  For example assigneeObjectRefName/RefId, or StatusName and StatusId
+            if(count($newValue) > 1) {
+                throw new Exception('ApptivoPHP: CreateUtil: setAttributeValue: More than 1 value provided for a standard attribute.  Only single values are accepted for standard attributes right now.  $fieldLabel ( '.json_encode($fieldLabel).' )   $newValue ( '.json_encode($newValue).' )');
+            }
+            $this->aApi->setAssociatedFieldValues($tagName, $newValue[0], $this->object, $this->appNameOrId);
+            $this->object->$tagName = $newValue[0];
         }else{
             $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
             $this->object->customAttributes[] = $newAttrObj;
@@ -77,7 +85,43 @@ class CreateUtil
      */
     public function createObject(): object
     {
+        //Here we perform any validations before creation.
+        //IMPROVEMENT Add more validation and extract to a more modular app-by-app solution
+        switch ($this->appNameOrId) {
+            case 'customers':
+                if(
+                    !isset($this->object->assigneeObjectRefName) || !$this->object->assigneeObjectRefName ||
+                    !isset($this->object->assigneeObjectRefId) || !$this->object->assigneeObjectRefId ||
+                    !isset($this->object->assigneeObjectId) || !$this->object->assigneeObjectId
+                ) {
+                    throw new Exception('ApptivoPhp: CreateUtil: createObject: Customer object is missing a required value. $this->object->assigneeObjectRefName ('.$this->object->assigneeObjectRefName.')  $this->object->assigneeObjectRefId ('.$this->object->assigneeObjectRefId.') $this->object->assigneeObjectId ('.$this->object->assigneeObjectId.')');
+                }
+                break;
+        }
         return ObjectCrud::create($this->appNameOrId, $this->object, $this->aApi);
+    }
+    
+    /**
+     * setAssociatedFieldValues
+     * 
+     * Wrapper function for ObjectDataUtils to automatically add to our created object
+     *
+     * @return void Returns the decoded json response from the Apptivo API
+     */
+    public function setAssociatedFieldValues(string $tagName, string $newValue): void
+    {
+        $currentObject = $this->object;
+        $this->aApi->setAssociatedFieldValues($tagName, $newValue, $currentObject, $this->appNameOrId);
+        $this->object = $currentObject;
+    }
+    
+    
+    /*
+     * Get/Set
+     */
+    public function getObject(): object
+    {
+        return $this->object;
     }
             
 }

@@ -45,22 +45,19 @@ class ObjectCrud
         //For custom apps we need 1 extra param here.  It's returned back by objParams, just need to inject into extraParams.  If it's an extension of cases we need to use the case obj params, except the object id & extra app id param
         //IMPROVEMENT See if we can eliminate these completely within AppParams.
         $appParts = explode('-',$appNameOrId);
-        if($app == 'customapp' || $objParams['objectUrlName'] == 'customapp') {
-            $extraParams .= '&customAppObjectId='.$objParams['objectId'];	
+        if($appParts[0] == 'customapp' || $appParams->objectUrlName == 'customapp') {
+            $extraParams .= '&customAppObjectId='.$appParams->objectId;	
         }
-        $objectId = '&objectId='.$objParams['objectId'];
-        $appIdStr = '&appId='.$objParams['objectId'];
         
         $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.
             $appParams->objectUrlName.
             '?a=save'.
-            $objIdStr.
-            '&objectId='.$objectData->id.
-            '&appId='.$objectData->id.
+            '&objectId='.$appParams->objectId.
+            '&appId='.$appParams->objectId.
             $extraParams.
             '&apiKey='.$aApi->getApiKey().
             '&accessKey='.$aApi->getAccessKey().
-            $aApi->getUserNameStr();
+            $aApi->getUserNameStr();        
         
         $client = new \GuzzleHttp\Client();
         for($i = 1; $i <= $aApi->apiRetries+1; $i++) {
@@ -111,7 +108,6 @@ class ObjectCrud
             Throw new Exception('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
         }
         $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
-        
         $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.
                 $appParams->objectUrlName.
                 '?a=getById&'.

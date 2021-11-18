@@ -7,6 +7,8 @@ namespace ToddMinerTech\ApptivoPhp;
 use Exception;
 use Google\Cloud\Logging\LoggingClient;
 use Illuminate\Support\Facades\Log;
+use ToddMinerTech\ApptivoPhp\ApptivoController;
+use ToddMinerTech\ApptivoPhp\SearchUtils;
 use ToddMinerTech\DataUtils\StringUtil;
 
 /**
@@ -18,6 +20,55 @@ use ToddMinerTech\DataUtils\StringUtil;
  */
 class ObjectDataUtils
 {
+    /**
+     * getConfigData
+     *
+     * @param string $appNameOrId App name, app id, or combo string for extended apps (cases-993829).
+     * 
+     * @param ApptivoController $aApi Your Apptivo controller object
+     *
+     * @return object Returns object containing the configuration for the app, or null if unable to locate
+     */
+    public static function getConfigData(string $appNameOrId, ApptivoController $aApi): object
+    {
+        $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
+        $appParts = explode('-',$appNameOrId);
+        if(count($appParts) > 1) {
+            $appId = $appParts[1];
+        }else{
+            $appId = $appParams->objectId;
+        }
+        if(!intval($appId)) {
+            //If we provide an app id we can ovverride it here.  This is used for custom apps, so a cases app extension uses app name Cases then the app id.
+            $appId = $appParams->objectId;
+        }
+        $existingConfigData = '';
+        $currentConfigDataArr = $aApi->getConfigDataArr();
+        foreach($currentConfigDataArr as $cConfig) {
+            if($cConfig->appId == $appId) {
+                $existingConfigData = $cConfig->configData;
+                return $existingConfigData;
+            }
+        }
+        $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.$appParams->objectUrlName.'?a=getConfigData&objectId='.$appId.'&apiKey='.$aApi->getApiKey().'&accessKey='.$aApi->getAccessKey().$aApi->getUserNameStr();
+        $client = new \GuzzleHttp\Client();
+        sleep($aApi->apiSleepTime);
+        $res = $client->request('GET', $apiUrl);
+        $body = $res->getBody();
+        $bodyContents = $body->getContents();
+        $newConfigData = json_decode($bodyContents);
+        if($newConfigData) {
+            $newConfigObj = new \stdClass();
+            $newConfigObj->appId = $appId;
+            $newConfigObj->appName = $appParams->appName;
+            $newConfigObj->configData = $newConfigData;
+            $currentConfigDataArr[] = $newConfigObj;
+            $aApi->setConfigDataArr($currentConfigDataArr);
+            return $newConfigData;
+        }
+        return null;
+    }
+    
     /**
      * getAttrDetailsFromLabel
      *
@@ -440,4 +491,64 @@ class ObjectDataUtils
         }
         return $newAttr;
     }
+    
+    /**
+     * setAssociatedFieldValues
+     * 
+     * Used when updating standard attributes on an object.  Will check if we have an associated field for a provided tagName, then update that attribute on the provided object.
+     * Example use case is passing in statusName as a tag within the customers app.  This function will detect the associated field statusId, then get the matching id from the config and update it.
+     *
+     * @param array $tagName The attribute tagName 
+     *
+     * @param string $newValue The value for the provided tagName, used to map to associated id numbers
+     *
+     * @param string $appNameOrId The apptivo app name or id used to find the right rules below
+     *
+     * @param object $configData The apptivo app config as provided from the apptivo controller data
+     *
+     * @param ApptivoController $aApi Your Apptivo controller object
+     *
+     * @return void We update the $object object directly
+     */
+    public static function setAssociatedFieldValues(string $tagName, string $newValue, object &$object, string $appNameOrId, object $configData, ApptivoController $aApi): void
+    {
+        //IMPROVEMENT - Refactor this to have a proper modular way to define rules per app.  Quick and dirty to establish a few apps first.
+        switch(strtolower($appNameOrId)) {
+            case 'customers':
+                switch($tagName) {
+                    case 'statusName':
+                        $object->statusId = self::getCustomerStatusIdFromStatusName($newValue, $configData);
+                    break;
+                    case 'assigneeObjectRefName':
+                        //IMPROVEMENT Hard-coded to an employee - Add support for team objects at some point
+                        $object->assigneeObjectRefId = \ToddMinerTech\ApptivoPhp\SearchUtils::getEmployeeIdFromName($newValue, $aApi);
+                        $object->assigneeObjectId = 8;
+                    break;
+                }
+            break;
+        }
+    }
+    
+    /**
+     * getCustomerStatusIdFromStatusName
+     * 
+     * Provide a statusName value and locate the matching statusId value from customers app settings
+     *
+     * @param string $statusNameToFind The valid statusName value
+     *
+     * @param object $configData The apptivo app config as provided from the apptivo controller data
+     *
+     * @return string Returns the matching ID or throws an exception
+     */
+    public static function getCustomerStatusIdFromStatusName(string $statusNameToFind, object $configData): string
+    {
+        foreach($configData->customerStatusList as $cVal) {
+            if(StringUtil::sComp($statusNameToFind,$cVal->statusName)) {
+                return (string)$cVal->statusId;
+            }
+        }
+        throw new Exception('ApptivoPHP: ObjectDataUtils: getCustomerStatusIdFromStatusName: unable to lcoate a matching status for $statusNameToFind ('.$statusNameToFind.')');
+    }
+    
+    
 }

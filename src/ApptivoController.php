@@ -41,54 +41,20 @@ class ApptivoController
         }
     }
     
-    /**
-     * getConfigData
-     *
-     * @param string $appNameOrId App name, app id, or combo string for extended apps (cases-993829).
-     *
-     * @return object Returns object containing the configuration for the app, or null if unable to locate
+    /* ObjectCrud 
+     * 
      */
-    public function getConfigData(string $appNameOrId): object
+    public function read(string $appNameOrId, string $objectId): object 
     {
-        $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
-        $appParts = explode('-',$appNameOrId);
-        if(count($appParts) > 1) {
-            $appId = $appParts[1];
-        }else{
-            $appId = $appParams->objectId;
-        }
-        if(!intval($appId)) {
-            //If we provide an app id we can ovverride it here.  This is used for custom apps, so a cases app extension uses app name Cases then the app id.
-            $appId = $appParams->objectId;
-        }
-        $existingConfigData = '';
-        foreach($this->configDataArr as $cConfig) {
-            if($cConfig->appId == $appId) {
-                $existingConfigData = $cConfig->configData;
-                return $existingConfigData;
-            }
-        }
-        $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.$appParams->objectUrlName.'?a=getConfigData&objectId='.$appId.'&apiKey='.$this->apiKey.'&accessKey='.$this->accessKey.$this->apiUserNameStr;
-        $client = new \GuzzleHttp\Client();
-        sleep($this->apiSleepTime);
-        $res = $client->request('GET', $apiUrl);
-        $body = $res->getBody();
-        $bodyContents = $body->getContents();
-        $newConfigData = json_decode($bodyContents);
-        if($newConfigData) {
-            $newConfigObj = new \stdClass();
-            $newConfigObj->appId = $appId;
-            $newConfigObj->appName = $appParams->appName;
-            $newConfigObj->configData = $newConfigData;
-            $this->configDataArr[] = $newConfigObj;
-            return $newConfigData;
-        }
-        return null;
+        return \ToddMinerTech\ApptivoPhp\ObjectCrud::read($appNameOrId, $objectId, $this);
     }
     
-    public function getById(string $appNameOrId, string $objectId): object 
+    /* ObjectDataUtils 
+     * 
+     */    
+    public function getConfigData(string $appNameOrId): object
     {
-        return \ToddMinerTech\ApptivoPhp\ObjectCrud::getById($appNameOrId, $objectId, $this);
+        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getConfigData($appNameOrId, $this);
     }
     
     public function getAttrDetailsFromLabel(array $fieldLabel, object $inputObj, string $appNameOrId): ?object 
@@ -97,19 +63,58 @@ class ApptivoController
         return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getAttrDetailsFromLabel($fieldLabel, $inputObj, $configData);
     }
     
+    public function getAttrSettingsObjectFromLabel(array $fieldLabel, string $appNameOrId): ?object 
+    {
+        $configData = $this->getConfigData($appNameOrId);
+        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getSettingsAttrObjectFromLabel($fieldLabel, $configData);
+    }
+    
     public function createNewAttrObjFromLabelAndValue(array $fieldLabel, array $newValue, string $appNameOrId): object 
     {
         $configData = $this->getConfigData($appNameOrId);
         return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $configData);
     }
     
-    public function getApiKey() {
+    public function setAssociatedFieldValues(string $tagName, string $newValue, object &$object, string $appNameOrId): void
+    {
+        $configData = $this->getConfigData($appNameOrId);
+        \ToddMinerTech\ApptivoPhp\ObjectDataUtils::setAssociatedFieldValues($tagName, $newValue, $object, $appNameOrId, $configData, $this);
+    }
+    
+    /* SearchUtils 
+     * 
+     */  
+    public function getAllBySearchText(string $searchText, string $appNameOrId): array
+    {
+        return \ToddMinerTech\ApptivoPhp\SearchUtils::getAllBySearchText($searchText, $appNameOrId, $this);
+    }
+    
+    public function getEmployeeIdFromName(string $employeeNameToFind): string
+    {
+        return \ToddMinerTech\ApptivoPhp\SearchUtils::getEmployeeIdFromName($employeeNameToFind, $this);
+    }
+    
+    /* Get/Set 
+     * 
+     */  
+    public function getApiKey(): string
+    {
         return $this->apiKey;
     }
-    public function getAccessKey() {
+    public function getAccessKey(): string
+    {
         return $this->accessKey;
     }
-    public function getUserNameStr() {
+    public function getUserNameStr(): string
+    {
         return $this->apiUserNameStr;
+    }
+    public function getConfigDataArr(): array
+    {
+        return $this->configDataArr;
+    }
+    public function setConfigDataArr(array $newConfigDataArr): void
+    {
+        $this->configDataArr = $newConfigDataArr;
     }
 }
