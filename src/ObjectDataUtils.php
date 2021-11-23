@@ -573,4 +573,26 @@ class ObjectDataUtils
         }
         return ''; //If we fail to match return an empty string
     }
+    
+    /**
+     * getTableRowColIndexFromAttributeId
+     * 
+     * Provide a customAttributeId to get the index of the column where the attribute exists.  Columns are built based on order the attribute was added from within Apptivo, not consistent.
+     *
+     * @param string $customAttributeId customAttributeId for the attribute within the table
+     *
+     * @param object $tableRowObj The object data for the table row
+       *
+     * @return int The 0 based index of the column or null if the column doesn't exist in this row
+     */
+    function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
+    {
+        //IMPROVEMENT get this extracted into a class of data utilities for tables
+        for($col = 0; $col < count($tableRowObj->columns); $col++) {
+            if(StringUtil::sComp($tableRowObj->columns[$col]->customAttributeId,$customAttributeId)) {
+                return $col;
+            }
+        }
+        return null;
+    }
 }
