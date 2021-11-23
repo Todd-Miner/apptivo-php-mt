@@ -550,5 +550,27 @@ class ObjectDataUtils
         throw new Exception('ApptivoPHP: ObjectDataUtils: getCustomerStatusIdFromStatusName: unable to lcoate a matching status for $statusNameToFind ('.$statusNameToFind.')');
     }
     
-    
+    /**
+     * Get an address field value from an Apptivo object using an address type name and field name
+     *
+     * @param string $addressType The addressType value as configured in this Apptivo app
+     *
+     * @param string $addressFieldName The address object attribute name as it appears in Apptivo data
+     *
+     * @param object $sourceModelObj The Apptivo object to search
+     *
+     * @return string With address field value, or empty string if no value present
+     */
+    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFieldName, object $sourceModelObj): string
+    {
+        $allAddresses = $sourceModelObj->addresses;
+        for($a = 0; $a < count($allAddresses); $a++) {
+            if(StringUtil::ssComp($addressType, $allAddresses[$a]->addressType)) {
+                if(isset($allAddresses[$a]->$addressFieldName)) {
+                    return $allAddresses[$a]->$addressFieldName;
+                }
+            }
+        }
+        return ''; //If we fail to match return an empty string
+    }
 }
