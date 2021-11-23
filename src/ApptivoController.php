@@ -80,6 +80,10 @@ class ApptivoController
         $configData = $this->getConfigData($appNameOrId);
         \ToddMinerTech\ApptivoPhp\ObjectDataUtils::setAssociatedFieldValues($tagName, $newValue, $object, $appNameOrId, $configData, $this);
     }
+    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFieldName, object $sourceModelObj): string
+    {
+        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getAddressValueFromTypeAndField($addressType, $addressFieldName, $sourceModelObj);
+    }
     
     /* SearchUtils 
      * 
