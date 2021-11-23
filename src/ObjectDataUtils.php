@@ -585,7 +585,7 @@ class ObjectDataUtils
        *
      * @return int The 0 based index of the column or null if the column doesn't exist in this row
      */
-    function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
+    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
     {
         //IMPROVEMENT get this extracted into a class of data utilities for tables
         for($col = 0; $col < count($tableRowObj->columns); $col++) {
