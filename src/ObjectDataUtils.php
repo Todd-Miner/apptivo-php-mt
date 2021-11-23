@@ -575,6 +575,29 @@ class ObjectDataUtils
     }
     
     /**
+     * getSessionRowObjectFromTableIdAttributeId
+     * 
+     * Provide a customAttributeId to get the index of the column where the attribute exists.  Columns are built based on order the attribute was added from within Apptivo, not consistent.
+     *
+     * @param string $tableId The section attribute id for the table section
+     *
+     * @param object $projectData The Apptivo object data
+       *
+     * @return object Will return the table rows o
+     */
+    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ?array
+    {
+        if(!$objectData || !isset($objectData->customAttributes)) {
+            throw new Exception('ApptivoPhp: ObjectDataUtils: getTableSectionRowsFromSectionId: $objectData provided was not valid with a customAttributes attribute.  $objectData:  '.json_encode($objectData));
+        }
+        foreach($objectData->customAttributes as $cAttr) {
+            if($cAttr->customAttributeId == $tableSectionId) {
+                return $cAttr->rows;
+            }
+        }
+        return null;
+    }
+    /**
      * getTableRowColIndexFromAttributeId
      * 
      * Provide a customAttributeId to get the index of the column where the attribute exists.  Columns are built based on order the attribute was added from within Apptivo, not consistent.

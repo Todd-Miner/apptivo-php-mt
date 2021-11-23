@@ -88,7 +88,10 @@ class ApptivoController
     {
         return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getTableRowColIndexFromAttributeId($customAttributeId, $tableRowObj);
     }  
-    
+    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ?array
+    {
+        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
+    }  
     /* SearchUtils 
      * 
      */  
