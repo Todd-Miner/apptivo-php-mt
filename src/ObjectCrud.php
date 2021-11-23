@@ -123,11 +123,11 @@ class ObjectCrud
             $bodyContents = $body->getContents();
             $decodedApiResponse = json_decode($bodyContents);
             $returnObj = null;
-            if($decodedApiResponse && $decodedApiResponse->id) {
+            if($decodedApiResponse && isset($decodedApiResponse->id)) {
                 $returnObj = $decodedApiResponse;
-            } else if ($decodedApiResponse && $decodedApiResponse->data) {
+            } else if ($decodedApiResponse && isset($decodedApiResponse->data)) {
                 $returnObj = $decodedApiResponse->data;
-            } else if ($decodedApiResponse && $decodedApiResponse->responseObject) {
+            } else if ($decodedApiResponse && isset($decodedApiResponse->responseObject)) {
                 $returnObj = $decodedApiResponse->responseObject;
             }
             if($returnObj) {
