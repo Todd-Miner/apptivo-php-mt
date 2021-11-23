@@ -84,6 +84,10 @@ class ApptivoController
     {
         return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getAddressValueFromTypeAndField($addressType, $addressFieldName, $sourceModelObj);
     }
+    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
+    {
+        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getTableRowColIndexFromAttributeId($customAttributeId, $tableRowObj);
+    }  
     
     /* SearchUtils 
      * 
