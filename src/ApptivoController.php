@@ -97,7 +97,7 @@ class ApptivoController
     public function getTableSectionRowsFromSectionLabel(string $sectionLabel, object $objectData, string $appNameOrId): ?array
     {
         $configData = $this->getConfigData($appNameOrId);
-        $tableSectionId = ObjectTableUtils::getTableSectionIdFromLabel($sectionLabel, $configData);
+        $tableSectionId = ObjectTableUtils::getTableSectionAttributeIdFromLabel($sectionLabel, $configData);
         return self::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
     }
     public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
