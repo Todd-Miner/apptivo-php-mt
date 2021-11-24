@@ -108,9 +108,10 @@ class ApptivoController
     {
         return ObjectTableUtils::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
     }  
-    public function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, object $inputConfig): ?string
+    public function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, string $appNameOrId): ?string
     {
-        return ObjectTableUtils::getTableRowAttrValueFromLabel($inputLabel, $inputRowObj, $inputConfig);
+        $configData = $this->getConfigData($appNameOrId);
+        return ObjectTableUtils::getTableRowAttrValueFromLabel($inputLabel, $inputRowObj, $configData);
     }
     
     /* SearchUtils 

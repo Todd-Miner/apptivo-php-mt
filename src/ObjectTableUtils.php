@@ -62,7 +62,7 @@ class ObjectTableUtils
         $foundAttr = false;
         foreach($sections as $cSection) {
             $sectionName = $cSection->label;
-            if(sComp($sectionName,$inputLabel)) {
+            if(StringUtil::sComp($sectionName,$inputLabel)) {
                 return $cSection->id;
             }
         }
@@ -138,9 +138,9 @@ class ObjectTableUtils
         for($col=0;$col<count($inputRowObj->columns);$col++) {
             if($inputRowObj->columns[$col]->customAttributeId == $customAttributeIdToFind) {
                 //logIt('returning customAttributeValue ('.$inputRowObj->columns[$col]->customAttributeValue.') from this json: '.json_encode($inputRowObj->columns[$col]));
-                if($inputRowObj->columns[$col]->customAttributeValue) {
+                if(isset($inputRowObj->columns[$col]->customAttributeValue) && $inputRowObj->columns[$col]->customAttributeValue) {
                     return $inputRowObj->columns[$col]->customAttributeValue;
-                }elseif($inputRowObj->columns[$col]->attributeValues && $inputRowObj->columns[$col]->attributeValues[0] && $inputRowObj->columns[$col]->attributeValues[0]->attributeValue) {
+                }elseif(isset($inputRowObj->columns[$col]->attributeValues) && isset($inputRowObj->columns[$col]->attributeValues[0]) && isset($inputRowObj->columns[$col]->attributeValues[0]->attributeValue)) {
                     return $inputRowObj->columns[$col]->attributeValues[0]->attributeValue;
                 }
             }

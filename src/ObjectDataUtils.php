@@ -126,6 +126,16 @@ class ObjectDataUtils
                             if(isset($inputObj->customAttributes[$i]->customAttributeValue)) {
                                 $attributeDetails->attrValue = $inputObj->customAttributes[$i]->customAttributeValue;
                             }
+                            //The above condition matches almost every field.  In some examples of referenceField we have seen other locations for the value.
+                            //One example is an email ref app field from a contact, it's stored on customAttributeValue1
+                            //If we don't have a value yet, start checking other locations
+                            if(!$attributeDetails->attrValue) {
+                                if(isset($inputObj->customAttributes[$i]->customAttributeValue1)) { 
+                                    $attributeDetails->attrValue = $inputObj->customAttributes[$i]->customAttributeValue1;
+                                }
+                            }
+                            
+                            
                             return $attributeDetails;
                         break;
                         default:
@@ -585,7 +595,7 @@ class ObjectDataUtils
      *
      * @return string The customAttributeId for this label
      */
-    function getAttributeIdFromLabel(string $inputLabel, object $inputConfig): string
+    public static function getAttributeIdFromLabel(string $inputLabel, object $inputConfig): string
     {
         if(!$inputConfig) {
             throw new Exception('getAttrValue - no valid config or app id provided.');
@@ -599,7 +609,7 @@ class ObjectDataUtils
             $sectionAttributes = $cSection->attributes;
             //logIt('json encoded cSection:  '.json_encode($cSection));
             //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
-            if( (!is_array($inputLabel)) || (is_array($inputLabel) && sComp($cSection->label,$inputLabel[0])) ) {
+            if( (!is_array($inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($cSection->label,$inputLabel[0])) ) {
                 foreach($sectionAttributes as $cAttr) {
                     if($cAttr->label) {
                         $labelName = $cAttr->label->modifiedLabel;
@@ -617,7 +627,7 @@ class ObjectDataUtils
                         $attributeId = $cAttr->attributeId;
                         $selectedValues = [];
                         //This is a potential attribute.  Now let's find the attribute with the matching label.  Both conditions for regular attribute and attribute in table
-                        if( ($cAttr->isEnabled) && ( (!is_array($inputLabel) && sComp($labelName,$inputLabel)) || (is_array($inputLabel) && sComp($labelName,$inputLabel[1])) ) ) {
+                        if( ($cAttr->isEnabled) && ( (!is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel[1])) ) ) {
                             //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
                             return $cAttr->attributeId;
                         }
