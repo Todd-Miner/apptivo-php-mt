@@ -575,47 +575,59 @@ class ObjectDataUtils
     }
     
     /**
-     * getSessionRowObjectFromTableIdAttributeId
+     * getAttributeIdFromLabel
      * 
-     * Provide a customAttributeId to get the index of the column where the attribute exists.  Columns are built based on order the attribute was added from within Apptivo, not consistent.
+     * Get an attribute id from a label by searching app config
      *
-     * @param string $tableId The section attribute id for the table section
+     * @param string $inputLabel The field label configured in Apptivo
      *
-     * @param object $projectData The Apptivo object data
-       *
-     * @return object Will return the table rows o
+     * @param object $inputConfig The Apptivo app config
+     *
+     * @return string The customAttributeId for this label
      */
-    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ?array
+    function getAttributeIdFromLabel(string $inputLabel, object $inputConfig): string
     {
-        if(!$objectData || !isset($objectData->customAttributes)) {
-            throw new Exception('ApptivoPhp: ObjectDataUtils: getTableSectionRowsFromSectionId: $objectData provided was not valid with a customAttributes attribute.  $objectData:  '.json_encode($objectData));
+        if(!$inputConfig) {
+            throw new Exception('getAttrValue - no valid config or app id provided.');
         }
-        foreach($objectData->customAttributes as $cAttr) {
-            if($cAttr->customAttributeId == $tableSectionId) {
-                return $cAttr->rows;
+        $webLayout = $inputConfig->webLayout;
+        $sectionsNode = json_decode($webLayout);
+        $sections = $sectionsNode->sections;
+        $foundAttr = false;
+        foreach($sections as $cSection) {
+            $sectionName = $cSection->label;
+            $sectionAttributes = $cSection->attributes;
+            //logIt('json encoded cSection:  '.json_encode($cSection));
+            //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
+            if( (!is_array($inputLabel)) || (is_array($inputLabel) && sComp($cSection->label,$inputLabel[0])) ) {
+                foreach($sectionAttributes as $cAttr) {
+                    if($cAttr->label) {
+                        $labelName = $cAttr->label->modifiedLabel;
+                        $attributeType = $cAttr->type;
+                        if(!isset($cAttr->attributeTag) || $cAttr->attributeTag == null) {
+                            $attributeTag = $cAttr->right[0]->tag;
+                        }else{
+                            $attributeTag = $cAttr->attributeTag;
+                        }
+                        if(!isset($cAttr->tagName) || $cAttr->tagName == null) {
+                            $attributeTagName = $cAttr->right[0]->tagName;
+                        }else{
+                            $attributeTagName = $cAttr->tagName;
+                        }
+                        $attributeId = $cAttr->attributeId;
+                        $selectedValues = [];
+                        //This is a potential attribute.  Now let's find the attribute with the matching label.  Both conditions for regular attribute and attribute in table
+                        if( ($cAttr->isEnabled) && ( (!is_array($inputLabel) && sComp($labelName,$inputLabel)) || (is_array($inputLabel) && sComp($labelName,$inputLabel[1])) ) ) {
+                            //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
+                            return $cAttr->attributeId;
+                        }
+                    }
+                }	
             }
         }
-        return null;
-    }
-    /**
-     * getTableRowColIndexFromAttributeId
-     * 
-     * Provide a customAttributeId to get the index of the column where the attribute exists.  Columns are built based on order the attribute was added from within Apptivo, not consistent.
-     *
-     * @param string $customAttributeId customAttributeId for the attribute within the table
-     *
-     * @param object $tableRowObj The object data for the table row
-       *
-     * @return int The 0 based index of the column or null if the column doesn't exist in this row
-     */
-    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
-    {
-        //IMPROVEMENT get this extracted into a class of data utilities for tables
-        for($col = 0; $col < count($tableRowObj->columns); $col++) {
-            if(StringUtil::sComp($tableRowObj->columns[$col]->customAttributeId,$customAttributeId)) {
-                return $col;
-            }
+        if(!$foundAttr) {
+            logIt('getAttributeIdFromLabeL: Could not find our attribute to get a value from, check label ('.$inputLabel.')',true);
+            return false;
         }
-        return null;
     }
 }
