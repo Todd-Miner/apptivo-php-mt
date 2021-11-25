@@ -154,7 +154,7 @@ class ObjectCrud
      *
      * @return object Returns the updated apptivo object
      */
-    public static function update(string $appNameOrId, array $attributeNames, array $attributeIds, object $objectData, bool $isCustomAttributeUpdate, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi, string $extraParams = ''): object
+    public static function update(string $appNameOrId, array $attributeNames, array $attributeIds, object $objectData, bool $isCustomAttributeUpdate, bool $isAddressUpdate, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi, string $extraParams = ''): object
     {
         if(!$appNameOrId) {
             Throw new Exception('ApptivoPHP: ObjectCrud: update: No $appNameOrId value was provided.');
@@ -186,6 +186,11 @@ class ObjectCrud
         $customAttrString = '&isCustomAttributesUpdate=';
         if($isCustomAttributeUpdate) {
             $customAttrString = '&isCustomAttributesUpdate=true';
+        }   
+        
+        $addressAttrString = '';
+        if($isAddressUpdate) {
+            $addressAttrString = '&isAddressUpdate=true';
         }    
         
         if(!$objectData) {
@@ -200,12 +205,12 @@ class ObjectCrud
             $attributeNamesStr.
             $attributeIdsStr.
             $customAttrString.
+            $addressAttrString.
             $extraParams.
             '&apiKey='.$aApi->getApiKey().
             '&accessKey='.$aApi->getAccessKey().
             $aApi->getUserNameStr();
 
-        
         $client = new \GuzzleHttp\Client();
         for($i = 1; $i <= $aApi->apiRetries+1; $i++) {
             sleep($aApi->apiSleepTime);

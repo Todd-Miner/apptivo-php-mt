@@ -99,7 +99,20 @@ class ObjectDataUtils
         $attributeDetails->settingsAttrObj = $settingsAttrObj;
         if($settingsAttrObj->type == 'Standard') {
             $tagName = $settingsAttrObj->tagName;
-            $attributeDetails->attrValue = $inputObj->$tagName;
+            //Special case for addresses.  We need to check each address and verify it has the right type.
+            if(strpos($inputLabel[0], '||') !== false) {
+                $addrParts = explode('||', $inputLabel[0]);
+                $addressType = $addrParts[1];
+                foreach($inputObj->addresses as $cAddr) {
+                    if(StringUtil::sComp($cAddr->addressType,$addressType)) {
+                        $attributeDetails->attrObj = $cAddr;
+                        $attributeDetails->attrValue = $cAddr->$tagName;
+                        return $attributeDetails;
+                    }
+                }
+            }else{
+                $attributeDetails->attrValue = $inputObj->$tagName;
+            }    
         }else{
             for($i = 0; $i < count($inputObj->customAttributes); $i++) {
                 if($inputObj->customAttributes[$i]->customAttributeId == $settingsAttrObj->attributeId) {
@@ -187,11 +200,32 @@ class ObjectDataUtils
             //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
             if( !$isTableAttr || ( $inputLabel && StringUtil::sComp($cSection->label,$inputLabel[0]) ) ) {
                 foreach($sectionAttributes as $cAttr) {
-                    if(!$cAttr->label) {
+                    if(isset($cAttr->addressGroupName) && $cAttr->addressGroupName && strpos($inputLabel[0], '||') !== false) {
+                        //$addressList contains what are normal looking custom attributes with the same label structure
+                        $addressAttrList = $cAttr->addressList;
+                        foreach($addressAttrList as $cAddr) {
+                            $labelObj = $cAddr->label;
+                            $labelName = $labelObj->modifiedLabel;
+                            //Addresses will be passed in as a string Address||AdressType||FieldLabel
+                            $inputLabelParts = explode('||', $inputLabel[0])[2];
+                            if( $cAttr->isEnabled && 
+                            ( 
+                                (!$isTableAttr && StringUtil::sComp($attributeTagName, explode('||', $inputLabel[0])[2])) || 
+                                (!$isTableAttr && StringUtil::sComp($labelName, explode('||', $inputLabel[0])[2]))
+                            )
+                            ) {
+                                //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
+                                return $cAddr;
+                            }
+                        }
+                        continue;
+                    } else if($cAttr->label) {
+                        $labelObj = $cAttr->label;
+                    } else {
                         continue;
                     }
-                    if(isset($cAttr->label->modifiedLabel)) {
-                        $labelName = $cAttr->label->modifiedLabel;
+                    if(isset($labelObj->modifiedLabel)) {
+                        $labelName = $labelObj->modifiedLabel;
                     }else{
                         if(isset($cAttr->modifiedLabel)) {
                             $labelName = $cAttr->modifiedLabel;
@@ -213,6 +247,7 @@ class ObjectDataUtils
                     $attributeId = $cAttr->attributeId;
                     $selectedValues = [];
                     //This is a potential attribute.  Now let's find the attribute with the matching label.  Both conditions for regular attribute and attribute in table
+                    
                     if( $cAttr->isEnabled && 
                     ( 
                         (!$isTableAttr && StringUtil::sComp($attributeTagName,$inputLabel[0])) || 
@@ -565,19 +600,19 @@ class ObjectDataUtils
      *
      * @param string $addressType The addressType value as configured in this Apptivo app
      *
-     * @param string $addressFieldName The address object attribute name as it appears in Apptivo data
+     * @param string $addressFielTagName The address object tagName, can be obtained by get attributeDetails
      *
      * @param object $sourceModelObj The Apptivo object to search
      *
      * @return string With address field value, or empty string if no value present
      */
-    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFieldName, object $sourceModelObj): string
+    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFielTagName, object $sourceModelObj): string
     {
         $allAddresses = $sourceModelObj->addresses;
         for($a = 0; $a < count($allAddresses); $a++) {
             if(StringUtil::ssComp($addressType, $allAddresses[$a]->addressType)) {
-                if(isset($allAddresses[$a]->$addressFieldName)) {
-                    return $allAddresses[$a]->$addressFieldName;
+                if(isset($allAddresses[$a]->$addressFielTagName)) {
+                    return $allAddresses[$a]->$addressFielTagName;
                 }
             }
         }
