@@ -200,6 +200,10 @@ class ObjectDataUtils
             //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
             if( !$isTableAttr || ( $inputLabel && StringUtil::sComp($cSection->label,$inputLabel[0]) ) ) {
                 foreach($sectionAttributes as $cAttr) {
+                    //Skip placeholders
+                    if(isset($cAttr->attributeTag) && $cAttr->attributeTag == 'placeholder'){ 
+                        continue;
+                    }
                     if(isset($cAttr->addressGroupName) && $cAttr->addressGroupName && strpos($inputLabel[0], '||') !== false) {
                         //$addressList contains what are normal looking custom attributes with the same label structure
                         $addressAttrList = $cAttr->addressList;
@@ -230,7 +234,7 @@ class ObjectDataUtils
                         if(isset($cAttr->modifiedLabel) && $cAttr->modifiedLabel) {
                             $labelName = $cAttr->modifiedLabel;
                         }else{
-                            throw new Exception('objectDataUtils: getAttrValueFromLabel: unable to locate the modifiedLabel attribute of this cAttr json ('.json_encode($cAttr));
+                            throw new Exception('objectDataUtils: getAttrValueFromLabel: unable to locate the modifiedLabel attribute of this cAttr json:   '.json_encode($cAttr));
                         }
                     }
                     $attributeType = $cAttr->type;
