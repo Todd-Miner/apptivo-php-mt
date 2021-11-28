@@ -219,15 +219,15 @@ class ObjectDataUtils
                             }
                         }
                         continue;
-                    } else if($cAttr->label) {
+                    } else if(isset($cAttr->label) && $cAttr->label) {
                         $labelObj = $cAttr->label;
                     } else {
                         continue;
                     }
-                    if(isset($labelObj->modifiedLabel)) {
+                    if(isset($labelObj->modifiedLabel) && $labelObj->modifiedLabel) {
                         $labelName = $labelObj->modifiedLabel;
                     }else{
-                        if(isset($cAttr->modifiedLabel)) {
+                        if(isset($cAttr->modifiedLabel) && $cAttr->modifiedLabel) {
                             $labelName = $cAttr->modifiedLabel;
                         }else{
                             throw new Exception('objectDataUtils: getAttrValueFromLabel: unable to locate the modifiedLabel attribute of this cAttr json ('.json_encode($cAttr));

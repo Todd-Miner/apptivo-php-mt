@@ -102,7 +102,7 @@ class ObjectCrud
      *
      * @return object Returns the apptivo object
      */
-    public static function read(string $appNameOrId, string $objectId, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi): object
+    public static function read(string $appNameOrId, string $objectId, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi): ?object
     {
         if(!$appNameOrId) {
             Throw new Exception('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
@@ -131,10 +131,10 @@ class ObjectCrud
                 $returnObj = $decodedApiResponse->responseObject;
             }
             if($returnObj) {
-                break;
+                return $returnObj;
             }
         }
-        return $returnObj;
+        return null;
     }
     
     /**
