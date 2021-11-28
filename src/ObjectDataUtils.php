@@ -201,7 +201,7 @@ class ObjectDataUtils
             if( !$isTableAttr || ( $inputLabel && StringUtil::sComp($cSection->label,$inputLabel[0]) ) ) {
                 foreach($sectionAttributes as $cAttr) {
                     //Skip placeholders
-                    if(isset($cAttr->attributeTag) && $cAttr->attributeTag == 'placeholder'){ 
+                    if(isset($cAttr->attributeTag) && ($cAttr->attributeTag == 'placeholder' || $cAttr->attributeTag == 'spacer')) { 
                         continue;
                     }
                     if(isset($cAttr->addressGroupName) && $cAttr->addressGroupName && strpos($inputLabel[0], '||') !== false) {
