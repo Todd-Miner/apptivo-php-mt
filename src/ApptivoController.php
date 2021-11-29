@@ -98,7 +98,7 @@ class ApptivoController
         return \ToddMinerTech\ApptivoPhp\SearchUtils::getEmployeeIdFromName($employeeNameToFind, $this);
     }
     
-    public function getCustomerObjFromName(string $customerNameToFind): string
+    public function getCustomerObjFromName(string $customerNameToFind): object
     {
         return \ToddMinerTech\ApptivoPhp\SearchUtils::getCustomerObjFromName($customerNameToFind, $this);
     }
