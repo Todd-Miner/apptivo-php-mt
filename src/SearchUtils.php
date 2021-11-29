@@ -94,11 +94,35 @@ class SearchUtils
             throw new Exception('ApptivoPHP: SearchUtils: getEmployeeIdFromName: unable to locate  a matching employee for $employeeNameToFind ('.$employeeNameToFind.')');
         }
     
+        /**
+         * getCustomerObjFromName
+         * 
+         * Provide a name and locate the matching reference id from the customers app
+         *
+         * @param string $customerNameToFind The customer name (space in between) Ex. "Todd Miner"
+         *
+         * @param ApptivoController $aApi Your Apptivo controller object
+         *
+         * @return object the complete customer object
+         */
+        public static function getCustomerObjFromName(string $customerNameToFind, ApptivoController $aApi): object
+        {
+            //IMPROVEMENT - Extract some of this into utils
+            $searchResults = $aApi->getAllBySearchText($customerNameToFind, 'customers');
+
+            foreach($searchResults as $cResult) {
+                if(StringUtil::ssComp($customerNameToFind,$cResult->customerName)) {
+                    return cResult;
+                }
+            }
+            //IMPROVEMENT Get rid of exception so we can return nothing when nothing is found
+            throw new Exception('ApptivoPHP: SearchUtils: getCustomerObjFromName: unable to locate  a matching employee for $customerNameToFind ('.$customerNameToFind.')');
+        }
     
         /**
          * getCustomerIdFromName
          * 
-         * Provide a name and locate the matching reference id from the customers app
+         * Wraps getCustomerObjFromName
          *
          * @param string $customerNameToFind The customer name (space in between) Ex. "Todd Miner"
          *
@@ -108,15 +132,6 @@ class SearchUtils
          */
         public static function getCustomerIdFromName(string $customerNameToFind, ApptivoController $aApi): string
         {
-            //IMPROVEMENT - Extract some of this into utils
-            $searchResults = $aApi->getAllBySearchText($customerNameToFind, 'customers');
-
-            foreach($searchResults as $cResult) {
-                if(StringUtil::ssComp($customerNameToFind,$cResult->customerName)) {
-                    return (string)$cResult->customerId;
-                }
-            }
-            //IMPROVEMENT Get rid of exception so we can return nothing when nothing is found
-            throw new Exception('ApptivoPHP: SearchUtils: getCustomerIdFromName: unable to locate  a matching employee for $customerNameToFind ('.$customerNameToFind.')');
+            return self::getCustomerObjFromName($customerNameToFind, $aApi)->customerId;
         }
 }
