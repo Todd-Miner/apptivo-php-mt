@@ -70,7 +70,16 @@ class CreateUtil
                 throw new Exception('ApptivoPHP: CreateUtil: setAttributeValue: More than 1 value provided for a standard attribute.  Only single values are accepted for standard attributes right now.  $fieldLabel ( '.json_encode($fieldLabel).' )   $newValue ( '.json_encode($newValue).' )');
             }
             $this->aApi->setAssociatedFieldValues($tagName, $newValue[0], $this->object, $this->appNameOrId);
-            $this->object->$tagName = $newValue[0];
+
+            if(isset($settingsAttrObj->validateType) && $settingsAttrObj->validateType == 'date') {
+                //We expect m/d/Y but will attempt to convert any other formats now
+                $convTime = strtotime($newValue[0]);
+                $convDate = date('m/d/Y',$convTime);
+                $valueToSet = $convDate;
+            }else{
+                $valueToSet = $newValue[0];
+            }
+            $this->object->$tagName = $valueToSet;
         }else{
             $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
             $this->object->customAttributes[] = $newAttrObj;
@@ -122,6 +131,10 @@ class CreateUtil
     public function getObject(): object
     {
         return $this->object;
+    }  
+    public function setObject(object $inputObject): void
+    {
+        $this->object = $inputObject;
     }
             
 }

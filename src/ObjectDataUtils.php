@@ -284,9 +284,9 @@ class ObjectDataUtils
         $settingsAttrObj = self::getSettingsAttrObjectFromLabel($inputLabel, $appConfig);
 
         if(!isset($settingsAttrObj->attributeTag) || $settingsAttrObj->attributeTag == null) {
-                $attributeTag = $settingsAttrObj->right[0]->tag;
+            $attributeTag = $settingsAttrObj->right[0]->tag;
         }else{
-                $attributeTag = $settingsAttrObj->attributeTag;
+            $attributeTag = $settingsAttrObj->attributeTag;
         }
         if(!isset($settingsAttrObj->tagName) || $settingsAttrObj->tagName == null) {
                 $attributeTagName = $settingsAttrObj->right[0]->tagName;
@@ -420,13 +420,18 @@ class ObjectDataUtils
                 }
             break;
             case 'date':
-                $newAttr->customAttributeValue = $inputValue[0];
-                if($inputValue) {
-                    //Assuming inputval is m/d/Y, convert to Y-m-d 
+                if($inputValue[0]) {
+                    //We expect m/d/Y but will attempt to convert any other formats now
+                    $convTime = strtotime($inputValue[0]);
+                    $convDate = date('m/d/Y',$convTime);
+                    $newAttr->customAttributeValue = $convDate;
+                    //This attribute was seen in some situations.  Has been removed for a while with no issue but preserving here.
+                    //It is the same date but m/d/Y is converted to Y-m-d 
                     //$newAttr->dateValue = date('Y-m-d',strtotime($inputValue[0])).' 00:00:00';
                     $newAttr->fieldType = 'NUMBER';
                     $newAttr->attributeValues = [];
                 }else{
+                    $newAttr->customAttributeValue = '';
                     $newAttr->customAttributeValueId = '';
                 }
             break;

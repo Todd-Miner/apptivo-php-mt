@@ -80,6 +80,8 @@ class ObjectCrud
             } else if ($decodedApiResponse && isset($decodedApiResponse->customer)) {
                 $returnObj = $decodedApiResponse->customer;
                 //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
+            } else if ($decodedApiResponse && isset($decodedApiResponse->csCase)) {
+                $returnObj = $decodedApiResponse->csCase;
             }
             if($returnObj) {
                 break;

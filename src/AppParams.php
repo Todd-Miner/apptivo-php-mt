@@ -33,9 +33,12 @@ class AppParams
         if(count($appNameOrIdParts) > 1) {
             $appId = intVal($appNameOrIdParts[1]);
             $this->appName = $appNameOrIdParts[0];
+            $matchVal = $this->appName;
+        }else{
+            $matchVal = $appNameOrId;
         }
         //Set the standard parameters to be used in the URL below
-        switch(strtolower($appNameOrId)) {
+        switch(strtolower($matchVal)) {
             case 59:
             case 'cases':
             case 'case':
@@ -174,14 +177,8 @@ class AppParams
                 $this->objectId = 19;
             break;
             default:
-                //For custom apps we should pass in customapp-appid
-                if(strpos($appNameOrId,'customapp-') !== false) {
-                    $this->objectSingularName = 'customapp';
-                    $this->objectUrlName = 'customapp';
-                    $this->objectDataName = 'customAppData';
-                    $this->objectIdName = 'customAppId';
-                    $this->objectId = $appId;
-                }
+                throw new Exception('Invalid appNameOrId ('.$appNameOrId.')');
+                
         }
     }
 }
