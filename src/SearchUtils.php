@@ -112,7 +112,7 @@ class SearchUtils
 
             foreach($searchResults as $cResult) {
                 if(StringUtil::ssComp($customerNameToFind,$cResult->customerName)) {
-                    return cResult;
+                    return $cResult;
                 }
             }
             //IMPROVEMENT Get rid of exception so we can return nothing when nothing is found
