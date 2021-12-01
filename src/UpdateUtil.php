@@ -156,7 +156,7 @@ class UpdateUtil
      */
     public function updateObject(): object
     {
-        if(count($this->attributeIds) > 0) {
+        if(count($this->attributeIds) > 0 || count($this->attributeNames) > 0) {
             $isCustomAttributeUpdate = false;
             if(in_array('customAttributes',$this->attributeNames)) {
                 $isCustomAttributeUpdate = true;
