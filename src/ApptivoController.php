@@ -26,11 +26,11 @@ class ApptivoController
     /**  @var string $apiUserEmail Email address of the employee who we should perform actions on behalf of */
     private $apiUserNameStr;
     /**  @var string $sessionEmailId Email address of the session we authenticated */
-    private $sessionEmailId;
+    public $sessionEmailId;
     /**  @var string $sessionPassword Matching password for session email */
-    private $sessionPassword;
+    public $sessionPassword;
     /**  @var string $firmId Firm id for the session authentication */
-    private $firmId;
+    public $firmId;
     /**  @var string $sessionKey Session key from authentication */
     public $sessionKey = '';
     /**  @var array $configDataArr Stores an array of json config data objects queried from API to prevent multiple queries */
@@ -128,9 +128,9 @@ class ApptivoController
     {
         return \ToddMinerTech\ApptivoPhp\SearchUtils::getCustomerIdFromName($customerNameToFind, $this);
     }
-    public static function getAllRecordsInApp(string $appNameOrId,  ApptivoController $aApi, int $maxRecords = 20000): array
+    public function getAllRecordsInApp(string $appNameOrId, int $maxRecords = 20000): array
     {
-        return \ToddMinerTech\ApptivoPhp\SearchUtils::getAllRecordsInApp($appNameOrId,  $aApi, $maxRecords);
+        return \ToddMinerTech\ApptivoPhp\SearchUtils::getAllRecordsInApp($appNameOrId, $this, $maxRecords);
     }
     
     /* Get/Set 

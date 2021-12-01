@@ -28,18 +28,17 @@ class SystemUtils
      *
      * @return void stores your session data on the Apptivo 
      */
-    function setSessionKey(ApptivoController $aApi): void
+    public static function setSessionKey(ApptivoController $aApi): void
     {
         $apiUrl = 'https://api2.apptivo.com/app/'.
             'login'.
             '?a=login'.
             '&generateSessionkey=true'.
-            '&getSessionToken=true'.
-            $extraParams;
+            '&getSessionToken=true';
 
         $postFormParams = [
             'emailId' => $aApi->sessionEmailId,
-            'password' => $aApi->sessionEmailId,
+            'password' => $aApi->sessionPassword,
             'firmId' => $aApi->sessionFirmId
         ];
 
@@ -54,7 +53,7 @@ class SystemUtils
             $decodedApiResponse = json_decode($bodyContents);
 
             $returnObj = null;
-            if($decodedApiResponse && $decodedApiResponse->responseObject) {
+            if($decodedApiResponse && isset($decodedApiResponse->responseObject) && isset($decodedApiResponse->responseObject->authenticationKey)) {
                 $aApi->sessionKey = $decodedApiResponse->responseObject->authenticationKey;
                 return;
             }
