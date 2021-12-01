@@ -7,6 +7,7 @@ namespace ToddMinerTech\ApptivoPhp;
 use Exception;
 use Google\Cloud\Logging\LoggingClient;
 use Illuminate\Support\Facades\Log;
+use ToddMinerTech\ApptivoPhp\ApptivoController;
 use ToddMinerTech\DataUtils\StringUtil;
 
 /**
@@ -158,7 +159,7 @@ class SearchUtils
             $loopComplete = false;
             Do {
                 $startIndex = $i * $numRecords;
-                $batchResult = self::dataManagementGetAll($appName, $startIndex, $numRecords);
+                $batchResult = self::dataManagementGetAll($appNameOrId, $aApi, $startIndex, $numRecords);
                 $batchData = $batchResult->data;
                 if(is_array($batchData)) {
                     $allSearchRecords = array_merge($allSearchRecords,$batchData);
@@ -189,12 +190,11 @@ class SearchUtils
          *
          * @param int $numRecords Number of results to retrieve
          *
-         * @return array list of the apptivo objects retrieved
+         * @return object Object with data and countOfRecords attributes
          */
-        private static function dataManagementGetAll(string $appNameOrId, ApptivoController $aApi, int $startIndex = 0, int $numRecords = 2000): array
+        private static function dataManagementGetAll(string $appNameOrId, ApptivoController $aApi, int $startIndex = 0, int $numRecords = 2000): object
         {
-            $sessionData = $aApi->getSession();
-            if(!$sessionData) {
+            if(!$aApi->sessionKey) {
                 Throw new Exception('ApptivoPhp: SearchUtils: dataManagementGetAll: We had no sessionData, please first call setSessionCredentials before calling dataManagementGetAll');
             }
             
@@ -209,11 +209,10 @@ class SearchUtils
                 '&objectId='.$appParams->objectId.
                 '&objectStatus=0'.
                 '&startIndex='.$startIndex.
-                '&numRecords='.$numRecords.
-                $extraParams;
+                '&numRecords='.$numRecords;
 
             $postFormParams = [
-                'sessionKey' => $sessionData->responseObject->authenticationKey,
+                'sessionKey' => $aApi->sessionKey,
                 'apiKey' => $aApi->getApiKey(),
                 'accessKey' => $aApi->getAccessKey()
             ];
@@ -230,9 +229,9 @@ class SearchUtils
                 
                 $returnObj = null;
                 if($decodedApiResponse && $decodedApiResponse->data) {
-                    return $decodedApiResponse->data;
+                    return $decodedApiResponse;
                 }
             }
-            throw new Exception('ApptivoPHP: SearchUtils: getAllBySearchText: Failed to retrieve a valid response from the Apptivo API. $searchText ('.$searchText.')  $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
+            throw new Exception('ApptivoPHP: SearchUtils: dataManagementGetAll: Failed to retrieve a valid response from the Apptivo API. $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
         }
 }

@@ -32,6 +32,7 @@ class ApptivoController
     /**  @var string $firmId Firm id for the session authentication */
     public $firmId;
     /**  @var string $sessionKey Session key from authentication */
+    //IMPROVEMENT do get/set and privatize later
     public $sessionKey = '';
     /**  @var array $configDataArr Stores an array of json config data objects queried from API to prevent multiple queries */
     private $configDataArr = [];
