@@ -7,6 +7,7 @@ namespace ToddMinerTech\ApptivoPhp;
 use ToddMinerTech\ApptivoPhp\AppParams;
 use ToddMinerTech\ApptivoPhp\ObjectCrud;
 use ToddMinerTech\ApptivoPhp\ObjectDataUtils;
+use ToddMinerTech\ApptivoPhp\SystemUtils;
 use GuzzleHttp\Psr7\Request;
 
 /**
@@ -24,6 +25,14 @@ class ApptivoController
     private $accessKey;
     /**  @var string $apiUserEmail Email address of the employee who we should perform actions on behalf of */
     private $apiUserNameStr;
+    /**  @var string $sessionEmailId Email address of the session we authenticated */
+    private $sessionEmailId;
+    /**  @var string $sessionPassword Matching password for session email */
+    private $sessionPassword;
+    /**  @var string $firmId Firm id for the session authentication */
+    private $firmId;
+    /**  @var string $sessionKey Session key from authentication */
+    public $sessionKey = '';
     /**  @var array $configDataArr Stores an array of json config data objects queried from API to prevent multiple queries */
     private $configDataArr = [];
     /**  @var int $apiSleepTime The global wait time to be applied before executing an api call.  Prevents rate limiting by the Apptivo API. */
@@ -39,6 +48,18 @@ class ApptivoController
         }else{
             $this->apiUserNameStr = '';
         }
+    }
+    
+    /* 
+     * setSessionCredentials Most endpoints work fine with api/access key authentication, but some require a sessionKey.
+     * Load in these values securely, then call SystemUtils::setSessionKey to authenticate and store a session key.
+     */
+    public function setSessionCredentials(string $sessionEmailId, string $password, string $firmId): void
+    {
+        $this->sessionEmailId = $sessionEmailId;
+        $this->sessionPassword = $password;
+        $this->sessionFirmId = $firmId;
+        SystemUtils::setSessionKey($this);
     }
     
     /* ObjectCrud 
@@ -106,6 +127,10 @@ class ApptivoController
     public function getCustomerIdFromName(string $customerNameToFind): string
     {
         return \ToddMinerTech\ApptivoPhp\SearchUtils::getCustomerIdFromName($customerNameToFind, $this);
+    }
+    public static function getAllRecordsInApp(string $appNameOrId,  ApptivoController $aApi, int $maxRecords = 20000): array
+    {
+        return \ToddMinerTech\ApptivoPhp\SearchUtils::getAllRecordsInApp($appNameOrId,  $aApi, $maxRecords);
     }
     
     /* Get/Set 

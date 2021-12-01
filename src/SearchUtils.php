@@ -45,8 +45,8 @@ class SearchUtils
             $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
             $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.
                     $appParams->objectUrlName.
-                    '?a=getAllBySearchText&'.
-                    'searchText='.urlencode($searchText).
+                    '?a=getAllBySearchText'.
+                    '&searchText='.urlencode($searchText).
                     $extraParams.
                     '&apiKey='.$aApi->getApiKey().
                     '&accessKey='.$aApi->getAccessKey();
@@ -133,5 +133,106 @@ class SearchUtils
         public static function getCustomerIdFromName(string $customerNameToFind, ApptivoController $aApi): string
         {
             return self::getCustomerObjFromName($customerNameToFind, $aApi)->customerId;
+        }
+        
+    
+        /**
+         * getAllRecordsInApp
+         * 
+         * Wraps dataManagementGetAll to retrieve all records in an application with no filters*. 
+         * *Need to verify whether deleted records and inactive visibility statuses are included
+         *
+         * @param string $appNameOrId The Apptivo name or app id
+         *
+         * @param ApptivoController $aApi Your Apptivo controller object
+         *
+         * @param int $maxRecords If you want to cap the total records retrieved
+         *
+         * @return array list of every Apptivo object from that app
+         */
+	public static function getAllRecordsInApp(string $appNameOrId,  ApptivoController $aApi, int $maxRecords = 20000): array
+        {
+            $allSearchRecords = [];
+            $i = 0;
+            $numRecords = 5000;
+            $loopComplete = false;
+            Do {
+                $startIndex = $i * $numRecords;
+                $batchResult = self::dataManagementGetAll($appName, $startIndex, $numRecords);
+                $batchData = $batchResult->data;
+                if(is_array($batchData)) {
+                    $allSearchRecords = array_merge($allSearchRecords,$batchData);
+                    if($batchResult->countOfRecords < $numRecords) {
+                        $loopComplete = true;
+                    }
+                }else{
+                        $loopComplete = true;
+                }
+                $i++;
+            }While ($loopComplete == false);
+
+            return $allSearchRecords;
+        }
+        
+    
+        /**
+         * dataManagementGetAll
+         * 
+         * Uses special data management endpoint designed to retrieve data in bulk.
+         * Use this when trying to load data for mass processing rather than search for specific records.
+         *
+         * @param string $appNameOrId The Apptivo name or app id
+         *
+         * @param ApptivoController $aApi Your Apptivo controller object
+         *
+         * @param int $startIndex Starting index for results, 0 index
+         *
+         * @param int $numRecords Number of results to retrieve
+         *
+         * @return array list of the apptivo objects retrieved
+         */
+        private static function dataManagementGetAll(string $appNameOrId, ApptivoController $aApi, int $startIndex = 0, int $numRecords = 2000): array
+        {
+            $sessionData = $aApi->getSession();
+            if(!$sessionData) {
+                Throw new Exception('ApptivoPhp: SearchUtils: dataManagementGetAll: We had no sessionData, please first call setSessionCredentials before calling dataManagementGetAll');
+            }
+            
+            if(!$appNameOrId) {
+                Throw new Exception('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
+            }
+            $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
+            
+            $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.
+                'datamanagement'.
+                '?a=getAll'.
+                '&objectId='.$appParams->objectId.
+                '&objectStatus=0'.
+                '&startIndex='.$startIndex.
+                '&numRecords='.$numRecords.
+                $extraParams;
+
+            $postFormParams = [
+                'sessionKey' => $sessionData->responseObject->authenticationKey,
+                'apiKey' => $aApi->getApiKey(),
+                'accessKey' => $aApi->getAccessKey()
+            ];
+            
+            $client = new \GuzzleHttp\Client();
+            for($i = 1; $i <= $aApi->apiRetries+1; $i++) {
+                sleep($aApi->apiSleepTime);
+                $res = $client->request('POST', $apiUrl, [
+                    'form_params' => $postFormParams
+                ]);
+                $body = $res->getBody();
+                $bodyContents = $body->getContents();
+                $decodedApiResponse = json_decode($bodyContents);
+                
+                $returnObj = null;
+                if($decodedApiResponse && $decodedApiResponse->data) {
+                    return $decodedApiResponse->data;
+                }
+            }
+            throw new Exception('ApptivoPHP: SearchUtils: getAllBySearchText: Failed to retrieve a valid response from the Apptivo API. $searchText ('.$searchText.')  $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
         }
 }
