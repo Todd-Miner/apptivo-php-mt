@@ -7,6 +7,7 @@ namespace ToddMinerTech\ApptivoPhp;
 use ToddMinerTech\ApptivoPhp\AppParams;
 use ToddMinerTech\ApptivoPhp\ObjectCrud;
 use ToddMinerTech\ApptivoPhp\ObjectDataUtils;
+use ToddMinerTech\ApptivoPhp\ObjectTableUtils;
 use ToddMinerTech\ApptivoPhp\SystemUtils;
 use GuzzleHttp\Psr7\Request;
 
@@ -68,7 +69,7 @@ class ApptivoController
      */
     public function read(string $appNameOrId, string $objectId): object 
     {
-        return \ToddMinerTech\ApptivoPhp\ObjectCrud::read($appNameOrId, $objectId, $this);
+        return ObjectCrud::read($appNameOrId, $objectId, $this);
     }
     
     /* ObjectDataUtils 
@@ -76,35 +77,58 @@ class ApptivoController
      */    
     public function getConfigData(string $appNameOrId): object
     {
-        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getConfigData($appNameOrId, $this);
+        return ObjectDataUtils::getConfigData($appNameOrId, $this);
     }
     
     public function getAttrDetailsFromLabel(array $fieldLabel, object $inputObj, string $appNameOrId): ?object 
     {
         $configData = $this->getConfigData($appNameOrId);
-        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getAttrDetailsFromLabel($fieldLabel, $inputObj, $configData);
+        return ObjectDataUtils::getAttrDetailsFromLabel($fieldLabel, $inputObj, $configData);
     }
     
     public function getAttrSettingsObjectFromLabel(array $fieldLabel, string $appNameOrId): ?object 
     {
         $configData = $this->getConfigData($appNameOrId);
-        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getSettingsAttrObjectFromLabel($fieldLabel, $configData);
+        return ObjectDataUtils::getSettingsAttrObjectFromLabel($fieldLabel, $configData);
     }
     
     public function createNewAttrObjFromLabelAndValue(array $fieldLabel, array $newValue, string $appNameOrId): object 
     {
         $configData = $this->getConfigData($appNameOrId);
-        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $configData);
+        return ObjectDataUtils::createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $configData);
     }
     
     public function setAssociatedFieldValues(string $tagName, string $newValue, object &$object, string $appNameOrId): void
     {
         $configData = $this->getConfigData($appNameOrId);
-        \ToddMinerTech\ApptivoPhp\ObjectDataUtils::setAssociatedFieldValues($tagName, $newValue, $object, $appNameOrId, $configData, $this);
+        ObjectDataUtils::setAssociatedFieldValues($tagName, $newValue, $object, $appNameOrId, $configData, $this);
     }
     public static function getAddressValueFromTypeAndField(string $addressType, string $addressFieldName, object $sourceModelObj): string
     {
-        return \ToddMinerTech\ApptivoPhp\ObjectDataUtils::getAddressValueFromTypeAndField($addressType, $addressFieldName, $sourceModelObj);
+        return ObjectDataUtils::getAddressValueFromTypeAndField($addressType, $addressFieldName, $sourceModelObj);
+    }
+    
+    /* ObjectTableUtils 
+     * 
+     */  
+    public function getTableSectionRowsFromSectionLabel(string $sectionLabel, object $objectData, string $appNameOrId): ?array
+    {
+        $configData = $this->getConfigData($appNameOrId);
+        $tableSectionId = ObjectTableUtils::getTableSectionAttributeIdFromLabel($sectionLabel, $configData);
+        return self::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
+    }
+    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
+    {
+        return ObjectTableUtils::getTableRowColIndexFromAttributeId($customAttributeId, $tableRowObj);
+    }  
+    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ?array
+    {
+        return ObjectTableUtils::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
+    }  
+    public function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, string $appNameOrId): ?string
+    {
+        $configData = $this->getConfigData($appNameOrId);
+        return ObjectTableUtils::getTableRowAttrValueFromLabel($inputLabel, $inputRowObj, $configData);
     }
     
     /* SearchUtils 
@@ -112,26 +136,26 @@ class ApptivoController
      */  
     public function getAllBySearchText(string $searchText, string $appNameOrId): array
     {
-        return \ToddMinerTech\ApptivoPhp\SearchUtils::getAllBySearchText($searchText, $appNameOrId, $this);
+        return SearchUtils::getAllBySearchText($searchText, $appNameOrId, $this);
     }
     
     public function getEmployeeIdFromName(string $employeeNameToFind): string
     {
-        return \ToddMinerTech\ApptivoPhp\SearchUtils::getEmployeeIdFromName($employeeNameToFind, $this);
+        return SearchUtils::getEmployeeIdFromName($employeeNameToFind, $this);
     }
     
     public function getCustomerObjFromName(string $customerNameToFind): object
     {
-        return \ToddMinerTech\ApptivoPhp\SearchUtils::getCustomerObjFromName($customerNameToFind, $this);
+        return SearchUtils::getCustomerObjFromName($customerNameToFind, $this);
     }
     
     public function getCustomerIdFromName(string $customerNameToFind): string
     {
-        return \ToddMinerTech\ApptivoPhp\SearchUtils::getCustomerIdFromName($customerNameToFind, $this);
+        return SearchUtils::getCustomerIdFromName($customerNameToFind, $this);
     }
     public function getAllRecordsInApp(string $appNameOrId, int $maxRecords = 20000): array
     {
-        return \ToddMinerTech\ApptivoPhp\SearchUtils::getAllRecordsInApp($appNameOrId, $this, $maxRecords);
+        return SearchUtils::getAllRecordsInApp($appNameOrId, $this, $maxRecords);
     }
     
     /* Get/Set 
