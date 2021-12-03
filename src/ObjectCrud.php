@@ -157,9 +157,6 @@ class ObjectCrud
         }
         $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
         
-        if(!$attributeNames) {
-            return ResultObject::fail('ApptivoPHP: ObjectCrud: update: No $attributeNames value was provided.');
-        }
         //For contacts, maybe other apps too, attributeName should be singular
         if($appNameOrId == 'customers') {
             $aName = '';
@@ -168,9 +165,6 @@ class ObjectCrud
         }
         $attributeNamesStr = '&attributeName'.$aName.'='.urlencode(json_encode($attributeNames));
         
-        if(!$attributeIds) {
-            return ResultObject::fail('ApptivoPHP: ObjectCrud: update: No $attributeIds value was provided.');
-        }
         $attributeIdsStr = '&attributeIds='.urlencode(json_encode($attributeIds));
         
         $objIdStr = '';

@@ -125,7 +125,6 @@ class CreateUtil
         $this->object = $currentObject;
     }
     
-    
     /*
      * Get/Set
      */
