@@ -158,7 +158,7 @@ class ObjectCrud
         $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
         
         //For contacts, maybe other apps too, attributeName should be singular
-        if($appNameOrId == 'customers') {
+        if(in_array($appNameOrId,['customers','items'])) {
             $aName = '';
         }else{
             $aName = 's';
@@ -196,8 +196,6 @@ class ObjectCrud
             $customAttrString.
             $addressAttrString.
             $extraParams.
-            '&apiKey='.$aApi->getApiKey().
-            '&accessKey='.$aApi->getAccessKey().
             $aApi->getUserNameStr();
 
         $client = new \GuzzleHttp\Client();
@@ -205,7 +203,9 @@ class ObjectCrud
             sleep($aApi->apiSleepTime);
             $res = $client->request('POST', $apiUrl, [
                 'form_params' => [
-                    $appParams->objectDataName => json_encode($objectData)
+                    $appParams->objectDataName => json_encode($objectData),
+                    'apiKey' => $aApi->getApiKey(),
+                    'accessKey' => $aApi->getAccessKey()
                 ]
             ]);
             $body = $res->getBody();
@@ -223,6 +223,6 @@ class ObjectCrud
                 //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
             }
         }
-        return ResultObject::fail('ApptivoPHP: ObjectCrud: update - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')');
+        return ResultObject::fail('ApptivoPHP: ObjectCrud: update - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')   json_encode($objectData):    '.json_encode($objectData));
     }
 }
