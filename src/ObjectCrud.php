@@ -7,6 +7,7 @@ namespace ToddMinerTech\ApptivoPhp;
 use Exception;
 use ToddMinerTech\ApptivoPhp\AppParams;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
+use ToddMinerTech\ApptivoPhp\ResultObject;
 
 /**
  * Class ObjectCrud
@@ -30,15 +31,15 @@ class ObjectCrud
      *
      * @param string $extraParams Extra query string parameters to apply
      *
-     * @return object Returns the newly created apptivo object
+     * @return ResultObject
      */
-    public static function create(string $appNameOrId, object $objectData, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi, string $extraParams = ''): object
+    public static function create(string $appNameOrId, object $objectData, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi, string $extraParams = ''): ResultObject
     {
         if(!$appNameOrId) {
-            Throw new Exception('ApptivoPHP: ObjectCrud: create: No $appNameOrId value was provided.');
+            return ResultObject::fail('ApptivoPHP: ObjectCrud: create: No $appNameOrId value was provided.');
         }
         if(!$objectData) {
-            Throw new Exception('ApptivoPHP: ObjectCrud: create: No $objectData value was provided.');
+            return ResultObject::fail('ApptivoPHP: ObjectCrud: create: No $objectData value was provided.');
         }
         $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
         
@@ -73,24 +74,20 @@ class ObjectCrud
             $returnObj = null;
             if($decodedApiResponse && isset($decodedApiResponse->id)) {
                 $returnObj = $decodedApiResponse;
+                return ResultObject::success($decodedApiResponse);
             } else if ($decodedApiResponse && isset($decodedApiResponse->data)) {
-                $returnObj = $decodedApiResponse->data;
+                return ResultObject::success($decodedApiResponse->data);
             } else if ($decodedApiResponse && isset($decodedApiResponse->responseObject)) {
-                $returnObj = $decodedApiResponse->responseObject;
+                return ResultObject::success($decodedApiResponse->responseObject);
             } else if ($decodedApiResponse && isset($decodedApiResponse->customer)) {
-                $returnObj = $decodedApiResponse->customer;
+                return ResultObject::success($decodedApiResponse->customer);
                 //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
             } else if ($decodedApiResponse && isset($decodedApiResponse->csCase)) {
-                $returnObj = $decodedApiResponse->csCase;
-            }
-            if($returnObj) {
-                break;
+                return ResultObject::success($decodedApiResponse->csCase);
             }
         }
-        if(!$returnObj) {
-            throw new Exception('ApptivoPHP: ObjectCrud: create - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')');
-        }
-        return $returnObj;
+        //If we exhausted our retries we fail out here
+        return ResultObject::fail('ApptivoPHP: ObjectCrud: create - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')');
     }
     
     /**
@@ -102,12 +99,12 @@ class ObjectCrud
      *
      * @param string $objectId The apptivo object id you want to retrieve - find in the URL or the id attribute of any record
      *
-     * @return object Returns the apptivo object
+     * @return ResultObject
      */
-    public static function read(string $appNameOrId, string $objectId, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi): ?object
+    public static function read(string $appNameOrId, string $objectId, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi): ResultObject
     {
         if(!$appNameOrId) {
-            Throw new Exception('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
+            return ResultObject::fail('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
         }
         $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
         $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.
@@ -126,17 +123,14 @@ class ObjectCrud
             $decodedApiResponse = json_decode($bodyContents);
             $returnObj = null;
             if($decodedApiResponse && isset($decodedApiResponse->id)) {
-                $returnObj = $decodedApiResponse;
+                return ResultObject::success($decodedApiResponse);
             } else if ($decodedApiResponse && isset($decodedApiResponse->data)) {
-                $returnObj = $decodedApiResponse->data;
+                return ResultObject::success($decodedApiResponse->data);
             } else if ($decodedApiResponse && isset($decodedApiResponse->responseObject)) {
-                $returnObj = $decodedApiResponse->responseObject;
-            }
-            if($returnObj) {
-                return $returnObj;
+                return ResultObject::success($decodedApiResponse->responseObject);
             }
         }
-        return null;
+        return ResultObject::fail('ApptivoPhP: ObjectCrud: Read: Could not retrieve an Apptivo object for this request. $appNameOrId ('.$appNameOrId.')  $objectId ('.$objectId.')     $bodyContents:  '.$bodyContents);
     }
     
     /**
@@ -154,17 +148,17 @@ class ObjectCrud
      *
      * @param string $extraParams Extra query string parameters to apply
      *
-     * @return object Returns the updated apptivo object
+     * @return ResultObject
      */
-    public static function update(string $appNameOrId, array $attributeNames, array $attributeIds, object $objectData, bool $isCustomAttributeUpdate, bool $isAddressUpdate, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi, string $extraParams = ''): object
+    public static function update(string $appNameOrId, array $attributeNames, array $attributeIds, object $objectData, bool $isCustomAttributeUpdate, bool $isAddressUpdate, \ToddMinerTech\ApptivoPhp\ApptivoController $aApi, string $extraParams = ''): ResultObject
     {
         if(!$appNameOrId) {
-            Throw new Exception('ApptivoPHP: ObjectCrud: update: No $appNameOrId value was provided.');
+            return ResultObject::fail('ApptivoPHP: ObjectCrud: update: No $appNameOrId value was provided.');
         }
         $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
         
         if(!$attributeNames) {
-            Throw new Exception('ApptivoPHP: ObjectCrud: update: No $attributeNames value was provided.');
+            return ResultObject::fail('ApptivoPHP: ObjectCrud: update: No $attributeNames value was provided.');
         }
         //For contacts, maybe other apps too, attributeName should be singular
         if($appNameOrId == 'customers') {
@@ -174,9 +168,8 @@ class ObjectCrud
         }
         $attributeNamesStr = '&attributeName'.$aName.'='.urlencode(json_encode($attributeNames));
         
-        
         if(!$attributeIds) {
-            Throw new Exception('ApptivoPHP: ObjectCrud: update: No $attributeIds value was provided.');
+            return ResultObject::fail('ApptivoPHP: ObjectCrud: update: No $attributeIds value was provided.');
         }
         $attributeIdsStr = '&attributeIds='.urlencode(json_encode($attributeIds));
         
@@ -196,7 +189,7 @@ class ObjectCrud
         }    
         
         if(!$objectData) {
-            Throw new Exception('ApptivoPHP: ObjectCrud: update: No $objectData value was provided.');
+            return ResultObject::fail('ApptivoPHP: ObjectCrud: update: No $objectData value was provided.');
         }
         
         $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.
@@ -226,22 +219,16 @@ class ObjectCrud
             $decodedApiResponse = json_decode($bodyContents);
             $returnObj = null;
             if($decodedApiResponse && isset($decodedApiResponse->id)) {
-                $returnObj = $decodedApiResponse;
+                return ResultObject::success($decodedApiResponse->id);
             } else if ($decodedApiResponse && isset($decodedApiResponse->data)) {
-                $returnObj = $decodedApiResponse->data;
+                return ResultObject::success($decodedApiResponse->data);
             } else if ($decodedApiResponse && isset($decodedApiResponse->responseObject)) {
-                $returnObj = $decodedApiResponse->responseObject;
+                return ResultObject::success($decodedApiResponse->responseObject);
             } else if ($decodedApiResponse && isset($decodedApiResponse->customer)) {
-                $returnObj = $decodedApiResponse->customer;
+                return ResultObject::success($decodedApiResponse->customer);
                 //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
             }
-            if($returnObj) {
-                break;
-            }
         }
-        if(!$returnObj) {
-            throw new Exception('ApptivoPHP: ObjectCrud: update - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')');
-        }
-        return $returnObj;
+        return ResultObject::fail('ApptivoPHP: ObjectCrud: update - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')');
     }
 }

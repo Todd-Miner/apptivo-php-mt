@@ -1,7 +1,7 @@
 {
     "name": "toddminertech/apptivophp",
     "type": "library",
-    "description": "Integration tools for Apptivo API",
+    "description": "Tools for building applications that integration or extend Apptivo via API.",
     "keywords": [
         "Todd_Miner",
         "Apptivo_Php"
