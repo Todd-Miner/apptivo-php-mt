@@ -8,6 +8,7 @@ use Exception;
 use Google\Cloud\Logging\LoggingClient;
 use Illuminate\Support\Facades\Log;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
+use ToddMinerTech\ApptivoPhp\ResultObject;
 use ToddMinerTech\ApptivoPhp\SearchUtils;
 use ToddMinerTech\DataUtils\StringUtil;
 
@@ -66,7 +67,7 @@ class ObjectDataUtils
             $aApi->setConfigDataArr($currentConfigDataArr);
             return $newConfigData;
         }
-        return null;
+        throw new RuntimeGetConfigException('Unable to retrieve Apptivo app configuration using $appNameOrId ('.$appNameOrId.')');
     }
     
     /**
@@ -78,18 +79,22 @@ class ObjectDataUtils
      *
      * @param object $appConfig The apptivo app config as provided from the apptivo controller data
      *
-     * @return object Returns a stdClass object with 3 attributes: 
+     * @return ResultObject payload Returns a stdClass object with 3 attributes: 
      *      1 attrObj - The complete custom attribute object
      *      2 attrValue - The simple text value of the attribute.  Comma delimited if multiple values present.
      *      3 attrIndex - The 0 based index of the attribute within the customAttributes array of $inputObj
      *      4 settingsAttrObj - Complete custom attribute object from settings.  Contains the type, value ids, etc.
      */
-    public static function getAttrDetailsFromLabel(array $inputLabel, object $inputObj, object $appConfig): ?object
+    public static function getAttrDetailsFromLabel(array $inputLabel, object $inputObj, object $appConfig): ResultObject
     {
-        if(!$inputObj || !isset($inputObj->customAttributes) || !$inputObj->customAttributes) {
-            throw new Exception('ApptivoPhP: getAttrDetailsFromLabel: Invalid $inputObj provided.  Object is null, missing, or has empty customAttributes.');
+        if(!$inputObj) {
+            return ResultObject::fail('ApptivoPhP: getAttrDetailsFromLabel: Invalid $inputObj provided.  Object is null  json_encode($inputObj):   '.json_encode($inputObj));
         }
-        $settingsAttrObj = self::getSettingsAttrObjectFromLabel($inputLabel, $appConfig);
+        $settingsAttrResult = self::getSettingsAttrObjectFromLabel($inputLabel, $appConfig);
+        if(!$settingsAttrResult->isSuccessful) {
+            return ResultObject::fail($settingsAttrResult->payload);
+        }
+        $settingsAttrObj = $settingsAttrResult->payload;
         //Now check if the attribute id exists in this object 
         //IMPROVEMENT extract this into a real object since it got more complicated than expected
         $attributeDetails = new \stdClass();
@@ -107,13 +112,13 @@ class ObjectDataUtils
                     if(StringUtil::sComp($cAddr->addressType,$addressType)) {
                         $attributeDetails->attrObj = $cAddr;
                         $attributeDetails->attrValue = $cAddr->$tagName;
-                        return $attributeDetails;
+                        return ResultObject::success($attributeDetails);
                     }
                 }
             }else{
                 $attributeDetails->attrValue = $inputObj->$tagName;
             }    
-        }else{
+        } else if (isset($inputObj->customAttributes)){
             for($i = 0; $i < count($inputObj->customAttributes); $i++) {
                 if($inputObj->customAttributes[$i]->customAttributeId == $settingsAttrObj->attributeId) {
                     $attributeDetails->attrObj = $inputObj->customAttributes[$i];
@@ -125,7 +130,7 @@ class ObjectDataUtils
                                 //IMPROVEMENT - finish adding code to parse into comma delimited list of text values.
                                 $attributeDetails->attrValue = json_encode($inputObj->customAttributes[$i]->attributeValues);
                             }
-                            return $attributeDetails;
+                            return ResultObject::success($attributeDetails);
                         break;
                         case 'currency':
                         case 'date':
@@ -147,18 +152,17 @@ class ObjectDataUtils
                                     $attributeDetails->attrValue = $inputObj->customAttributes[$i]->customAttributeValue1;
                                 }
                             }
-                            
-                            
-                            return $attributeDetails;
+                            return ResultObject::success($attributeDetails);
                         break;
                         default:
-                            throw new Exception('This attribute was found but the $settingsAttrObj->attributeTag ('.$settingsAttrObj->attributeTag.') is not yet supported for inputLabel ('.json_encode($inputLabel).')');
+                            return ResultObject::fail('This attribute was found but the $settingsAttrObj->attributeTag ('.$settingsAttrObj->attributeTag.') is not yet supported for inputLabel ('.json_encode($inputLabel).')');
                     }
                 }
             }
         }
-        log::Debug('We didn\'t find the attribute label ('.json_encode($inputLabel).') present within this object.');
-        return $attributeDetails;
+        //If we cannot locate this attribute within the object, we will return an empty string as the attrValue
+        $attributeDetails->attrValue = '';
+        return ResultObject::success($attributeDetails);
     }
     
     /**
@@ -170,12 +174,12 @@ class ObjectDataUtils
      *
      * @param object $appConfig The apptivo app config as provided from the apptivo controller data
      *
-     * @return object Returns the complete custom attribute object for the requested label.
+     * @return ResultObject
      */
-    public static function getSettingsAttrObjectFromLabel(array $inputLabel, object $appConfig): object
+    public static function getSettingsAttrObjectFromLabel(array $inputLabel, object $appConfig): ResultObject
     {
         if(!$appConfig) {
-            throw new Exception('getSettingsAttrObjectFromLabel: no valid config provided.');
+            return ResultObject::fail('getSettingsAttrObjectFromLabel: no valid config provided.');
         }
         
         $webLayout = $appConfig->webLayout;
@@ -184,13 +188,13 @@ class ObjectDataUtils
         
         //We expect either 1 or 2 array values for inputLabel.  Verify and set a flag to be used for locating the attribute below.
         if(count($inputLabel) == 0) {
-            throw new Exception('getSettingsAttrObjectFromLabel: Function called with no values in $inputLabel.');
+            return ResultObject::fail('getSettingsAttrObjectFromLabel: Function called with no values in $inputLabel.');
         } else if (count($inputLabel) == 1) {
             $isTableAttr = false;
         } else if (count($inputLabel) == 2) {
             $isTableAttr = true;
         } else {
-            throw new Exception('getSettingsAttrObjectFromLabel: Function called with ('.count($inputLabel).') values in $inputLabel, but either 1 or 2 values are expected.  Contents of $inputLabel: '.json_encode($inputLabel));
+            return ResultObject::fail('getSettingsAttrObjectFromLabel: Function called with ('.count($inputLabel).') values in $inputLabel, but either 1 or 2 values are expected.  Contents of $inputLabel: '.json_encode($inputLabel));
         }
 
         foreach($sections as $cSection) {
@@ -219,7 +223,7 @@ class ObjectDataUtils
                             )
                             ) {
                                 //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
-                                return $cAddr;
+                                return ResultObject::success($cAddr);
                             }
                         }
                         continue;
@@ -234,7 +238,7 @@ class ObjectDataUtils
                         if(isset($cAttr->modifiedLabel) && $cAttr->modifiedLabel) {
                             $labelName = $cAttr->modifiedLabel;
                         }else{
-                            throw new Exception('objectDataUtils: getAttrValueFromLabel: unable to locate the modifiedLabel attribute of this cAttr json:   '.json_encode($cAttr));
+                            return ResultObject::fail('objectDataUtils: getAttrValueFromLabel: unable to locate the modifiedLabel attribute of this cAttr json:   '.json_encode($cAttr));
                         }
                     }
                     $attributeType = $cAttr->type;
@@ -260,12 +264,12 @@ class ObjectDataUtils
                     )
                     ) {
                         //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
-                        return $cAttr;
+                        return ResultObject::success($cAttr);
                     }
                 }	
             }
         }
-        Throw new Exception('getSettingsAttrObjectFromLabel: We could not locate this attribute inputLabel ('.json_encode($inputLabel).') within the settings');
+        return ResultObject::fail('getSettingsAttrObjectFromLabel: We could not locate this attribute inputLabel ('.json_encode($inputLabel).') within the settings');
     }
     
     /**
@@ -277,21 +281,24 @@ class ObjectDataUtils
      *
      * @param object $appConfig The apptivo app config as provided from the apptivo controller data
      *
-     * @return object Returns a newly generated attribute to insert or replace an existing attribute within the customAttributes array of an object
+     * @return ResultObject Returns a newly generated attribute to insert or replace an existing attribute within the customAttributes array of an object
      */
-    public static function createNewAttrObjFromLabelAndValue(array $inputLabel, array $inputValue, object $appConfig): object
+    public static function createNewAttrObjFromLabelAndValue(array $inputLabel, array $inputValue, object $appConfig): ResultObject
     {
-        $settingsAttrObj = self::getSettingsAttrObjectFromLabel($inputLabel, $appConfig);
-
+        $settingsAttrResult = self::getSettingsAttrObjectFromLabel($inputLabel, $appConfig);
+        if(!$settingsAttrResult->isSuccessful) {
+            return ResultObject::fail($settingsAttrResult->payload);
+        }
+        $settingsAttrObj = $settingsAttrResult->payload;
         if(!isset($settingsAttrObj->attributeTag) || $settingsAttrObj->attributeTag == null) {
             $attributeTag = $settingsAttrObj->right[0]->tag;
         }else{
             $attributeTag = $settingsAttrObj->attributeTag;
         }
         if(!isset($settingsAttrObj->tagName) || $settingsAttrObj->tagName == null) {
-                $attributeTagName = $settingsAttrObj->right[0]->tagName;
+            $attributeTagName = $settingsAttrObj->right[0]->tagName;
         }else{
-                $attributeTagName = $settingsAttrObj->tagName;
+            $attributeTagName = $settingsAttrObj->tagName;
         }
         if($attributeTag == 'select' || $attributeTag == 'multiSelect' || $attributeTag == 'check') {
             if( ($attributeTag == 'multiSelect' || $attributeTag == 'check') ) {
@@ -362,7 +369,7 @@ class ObjectDataUtils
                 }
                 if(!$foundVal && $inputValue) {
                     //If we end the loop without a value match we must log an exception, unless passed in value was empty
-                    Throw new Exception('Could not find a matching value for the attribute label ('.json_encode($inputLabel).')  and value ('.json_encode($inputValue).')');
+                    return ResultObject::fail('Could not find a matching value for the attribute label ('.json_encode($inputLabel).')  and value ('.json_encode($inputValue).')');
                     //log::debug('cAttr for failed label match:  '.json_encode($settingsAttrObj));
                 }
             }
@@ -541,9 +548,9 @@ class ObjectDataUtils
             break;
         }
         if(!$newAttr) {
-            Throw new Exception('ERROR: createNewAttrObjFromLabelAndValue was unable to produce an attribute');
+            ResultObject::fail('ERROR: createNewAttrObjFromLabelAndValue was unable to produce an attribute');
         }
-        return $newAttr;
+        return ResultObject::success($newAttr);
     }
     
     /**
@@ -562,16 +569,21 @@ class ObjectDataUtils
      *
      * @param ApptivoController $aApi Your Apptivo controller object
      *
-     * @return void We update the $object object directly
+     * @return ResultObject We update the $object object directly, but also return a status and the object data on success
      */
-    public static function setAssociatedFieldValues(string $tagName, string $newValue, object &$object, string $appNameOrId, object $configData, ApptivoController $aApi): void
+    public static function setAssociatedFieldValues(string $tagName, string $newValue, object &$object, string $appNameOrId, object $configData, ApptivoController $aApi): ResultObject
     {
         //IMPROVEMENT - Refactor this to have a proper modular way to define rules per app.  Quick and dirty to establish a few apps first.
         switch(strtolower($appNameOrId)) {
             case 'customers':
                 switch($tagName) {
                     case 'statusName':
-                        $object->statusId = self::getCustomerStatusIdFromStatusName($newValue, $configData);
+                        $statusResult = self::getCustomerStatusIdFromStatusName($newValue, $configData);
+                        if($statusResult->isSuccessful) {
+                            $object->statusId = $statusResult;
+                        }else{
+                            return ResultObject::fail('ApptivoPhp: ObjectDataUtils: '.$statusResult->payload);
+                        }
                     break;
                     case 'assigneeObjectRefName':
                         //IMPROVEMENT Hard-coded to an employee - Add support for team objects at some point
@@ -581,6 +593,7 @@ class ObjectDataUtils
                 }
             break;
         }
+        return ResultObject::success($object);
     }
     
     /**
@@ -592,16 +605,16 @@ class ObjectDataUtils
      *
      * @param object $configData The apptivo app config as provided from the apptivo controller data
      *
-     * @return string Returns the matching ID or throws an exception
+     * @return ResultObject Returns the matching ID
      */
-    public static function getCustomerStatusIdFromStatusName(string $statusNameToFind, object $configData): string
+    public static function getCustomerStatusIdFromStatusName(string $statusNameToFind, object $configData): ResultObject
     {
         foreach($configData->customerStatusList as $cVal) {
             if(StringUtil::sComp($statusNameToFind,$cVal->statusName)) {
-                return (string)$cVal->statusId;
+                return ResultObject::success((string)$cVal->statusId);
             }
         }
-        throw new Exception('ApptivoPHP: ObjectDataUtils: getCustomerStatusIdFromStatusName: unable to lcoate a matching status for $statusNameToFind ('.$statusNameToFind.')');
+        return ResultObject::fail('ApptivoPHP: ObjectDataUtils: getCustomerStatusIdFromStatusName: unable to lcoate a matching status for $statusNameToFind ('.$statusNameToFind.')');
     }
     
     /**
@@ -613,19 +626,19 @@ class ObjectDataUtils
      *
      * @param object $sourceModelObj The Apptivo object to search
      *
-     * @return string With address field value, or empty string if no value present
+     * @return ResultObject With address field value, or empty string if no value present
      */
-    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFielTagName, object $sourceModelObj): string
+    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFielTagName, object $sourceModelObj): ResultObject
     {
         $allAddresses = $sourceModelObj->addresses;
         for($a = 0; $a < count($allAddresses); $a++) {
             if(StringUtil::ssComp($addressType, $allAddresses[$a]->addressType)) {
                 if(isset($allAddresses[$a]->$addressFielTagName)) {
-                    return $allAddresses[$a]->$addressFielTagName;
+                    return ResultObject::success($allAddresses[$a]->$addressFielTagName);
                 }
             }
         }
-        return ''; //If we fail to match return an empty string
+        return ResultObject::fail('getAddressValueFromTypeAndField cannot locate a matching address for $addressType ('.$addressType.') and $addressFielTagName ('.$addressFielTagName.').');
     }
     
     /**
@@ -637,12 +650,12 @@ class ObjectDataUtils
      *
      * @param object $inputConfig The Apptivo app config
      *
-     * @return string The customAttributeId for this label
+     * @return ResultObject The customAttributeId for this label
      */
-    public static function getAttributeIdFromLabel(string $inputLabel, object $inputConfig): string
+    public static function getAttributeIdFromLabel(string $inputLabel, object $inputConfig): ResultObject
     {
         if(!$inputConfig) {
-            throw new Exception('getAttrValue - no valid config or app id provided.');
+            return ResultObject::fail('getAttrValue - no valid config or app id provided.');
         }
         $webLayout = $inputConfig->webLayout;
         $sectionsNode = json_decode($webLayout);
@@ -655,33 +668,33 @@ class ObjectDataUtils
             //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
             if( (!is_array($inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($cSection->label,$inputLabel[0])) ) {
                 foreach($sectionAttributes as $cAttr) {
-                    if($cAttr->label) {
-                        $labelName = $cAttr->label->modifiedLabel;
-                        $attributeType = $cAttr->type;
-                        if(!isset($cAttr->attributeTag) || $cAttr->attributeTag == null) {
-                            $attributeTag = $cAttr->right[0]->tag;
-                        }else{
-                            $attributeTag = $cAttr->attributeTag;
-                        }
-                        if(!isset($cAttr->tagName) || $cAttr->tagName == null) {
-                            $attributeTagName = $cAttr->right[0]->tagName;
-                        }else{
-                            $attributeTagName = $cAttr->tagName;
-                        }
-                        $attributeId = $cAttr->attributeId;
-                        $selectedValues = [];
-                        //This is a potential attribute.  Now let's find the attribute with the matching label.  Both conditions for regular attribute and attribute in table
-                        if( ($cAttr->isEnabled) && ( (!is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel[1])) ) ) {
-                            //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
-                            return $cAttr->attributeId;
-                        }
+                    if(!$cAttr->label) {
+                        continue;
+                    }
+                    $labelName = $cAttr->label->modifiedLabel;
+                    $attributeType = $cAttr->type;
+                    if(!isset($cAttr->attributeTag) || $cAttr->attributeTag == null) {
+                        $attributeTag = $cAttr->right[0]->tag;
+                    }else{
+                        $attributeTag = $cAttr->attributeTag;
+                    }
+                    if(!isset($cAttr->tagName) || $cAttr->tagName == null) {
+                        $attributeTagName = $cAttr->right[0]->tagName;
+                    }else{
+                        $attributeTagName = $cAttr->tagName;
+                    }
+                    $attributeId = $cAttr->attributeId;
+                    $selectedValues = [];
+                    //This is a potential attribute.  Now let's find the attribute with the matching label.  Both conditions for regular attribute and attribute in table
+                    if( ($cAttr->isEnabled) && ( (!is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($labelName,$inputLabel[1])) ) ) {
+                        //We have matched the right attribute from settings.  Now match value if it's a dropdown or multi select.
+                        return ResultObject::success($cAttr->attributeId);
                     }
                 }	
             }
         }
         if(!$foundAttr) {
-            logIt('getAttributeIdFromLabeL: Could not find our attribute to get a value from, check label ('.$inputLabel.')',true);
-            return false;
+            return ResultObject::fail('getAttributeIdFromLabeL: Could not find our attribute to get a value from, check label ('.$inputLabel.')');
         }
     }
 }

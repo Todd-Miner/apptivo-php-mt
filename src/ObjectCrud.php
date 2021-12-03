@@ -7,6 +7,7 @@ namespace ToddMinerTech\ApptivoPhp;
 use Exception;
 use ToddMinerTech\ApptivoPhp\AppParams;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
+use ToddMinerTech\ApptivoPhp\Exceptions\RuntimeGetConfigException;
 use ToddMinerTech\ApptivoPhp\ResultObject;
 
 /**

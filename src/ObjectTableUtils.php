@@ -9,6 +9,7 @@ use Google\Cloud\Logging\LoggingClient;
 use Illuminate\Support\Facades\Log;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
 use ToddMinerTech\ApptivoPhp\ObjectDataUtils;
+use ToddMinerTech\ApptivoPhp\ResultObject;
 use ToddMinerTech\ApptivoPhp\SearchUtils;
 use ToddMinerTech\DataUtils\StringUtil;
 
@@ -32,14 +33,18 @@ class ObjectTableUtils
      *
      * @param object $inputConfig The Apptivo app config data
        *
-     * @return object Will return the table rows 
+     * @return ResultObject Will return the table rows as an array
      */
-    public static function getTableSectionRowsFromSectionLabel(string $tableSectionLabel, object $objectData, object $inputConfig): ?array
+    public static function getTableSectionRowsFromSectionLabel(string $tableSectionLabel, object $objectData, object $inputConfig): ResultObject
     {
         if(!$objectData || !isset($objectData->customAttributes)) {
-            throw new Exception('ApptivoPhp: ObjectTableUtils: getTableSectionRowsFromSectionLabel: $objectData provided was not valid with a customAttributes attribute.  $objectData:  '.json_encode($objectData));
+            return ResultObject::fail('ApptivoPhp: ObjectTableUtils: getTableSectionRowsFromSectionLabel: $objectData provided was not valid with a customAttributes attribute.  $objectData:  '.json_encode($objectData));
         }
-        $tableSectionId = self::getTableSectionAttributeIdFromLabel($tableSectionLabel, $inputConfig);
+        $tableSectionIdResult = self::getTableSectionAttributeIdFromLabel($tableSectionLabel, $inputConfig);
+        if(!$tableSectionIdResult->isSuccessful) {
+            return ResultObject::fail($tableSectionIdResult->payload);
+        }
+        $tableSectionId = $tableSectionIdResult->payload;
         return self::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
     }
     
@@ -52,9 +57,9 @@ class ObjectTableUtils
      *
      * @param object $inputConfig The Apptivo app config data
        *
-     * @return string Will return the table section attribute id if found
+     * @return ResultObject Will return the table section attribute id if found
      */
-    public static function getTableSectionAttributeIdFromLabel(string $inputLabel, object $inputConfig): string
+    public static function getTableSectionAttributeIdFromLabel(string $inputLabel, object $inputConfig): ResultObject
     {
         $webLayout = $inputConfig->webLayout;
         $sectionsNode = json_decode($webLayout);
@@ -63,10 +68,10 @@ class ObjectTableUtils
         foreach($sections as $cSection) {
             $sectionName = $cSection->label;
             if(StringUtil::sComp($sectionName,$inputLabel)) {
-                return $cSection->id;
+                return ResultObject::success($cSection->id);
             }
         }
-        throw new Exception('ApptivoPhp: OBjectTableUtils: getTableSectionAttributeIdFromLabel: Could not find our attribute to get a value from, check label ('.$inputLabel.')',true);
+        return ResultObject::fail('ApptivoPhp: OBjectTableUtils: getTableSectionAttributeIdFromLabel: Could not find our attribute to get a value from, check label ('.$inputLabel.')',true);
     }
     
     /**
@@ -78,19 +83,19 @@ class ObjectTableUtils
      *
      * @param object $objectData The Apptivo object data
        *
-     * @return object Will return the table rows 
+     * @return ResultObject Will return the table rows 
      */
-    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ?array
+    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ResultObject
     {
         if(!$objectData || !isset($objectData->customAttributes)) {
-            throw new Exception('ApptivoPhp: ObjectDataUtils: getTableSectionRowsFromSectionId: $objectData provided was not valid with a customAttributes attribute.  $objectData:  '.json_encode($objectData));
+            return ResultObject::fail('ApptivoPhp: ObjectDataUtils: getTableSectionRowsFromSectionId: $objectData provided was not valid with a customAttributes attribute.  $objectData:  '.json_encode($objectData));
         }
         foreach($objectData->customAttributes as $cAttr) {
             if($cAttr->customAttributeId == $tableSectionId) {
-                return $cAttr->rows;
+                return ResultObject::success($cAttr->rows);
             }
         }
-        return null;
+        return ResultObject::fail('ApptivoPhp: ObjectTableUtils: getTableSectionRowsFromSectionId: Unable to locate the table section using $tableSectionId ('.$tableSectionId.') within the object $objectData:   '.json_encode($objectData));
     }
     
     /**
@@ -102,17 +107,17 @@ class ObjectTableUtils
      *
      * @param object $tableRowObj The object data for the table row
        *
-     * @return int The 0 based index of the column or null if the column doesn't exist in this row
+     * @return ResultObject The 0 based index of the column or null if the column doesn't exist in this row
      */
-    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
+    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ResultObject
     {
         //IMPROVEMENT get this extracted into a class of data utilities for tables
         for($col = 0; $col < count($tableRowObj->columns); $col++) {
             if(StringUtil::sComp($tableRowObj->columns[$col]->customAttributeId,$customAttributeId)) {
-                return $col;
+                return ResultObject::success($col);
             }
         }
-        return null;
+        return ResultObject::fail('ApptivoPhp: ObjectTableUtils: getTableRowColIndexFromAttributeId: Unable to locate this column  $customAttributeId ('.$customAttributeId.') within the object data.  This can be common when accessing attributes added after the last time an object was created.');
     }
     
     /**
@@ -127,24 +132,29 @@ class ObjectTableUtils
      *
      * @param object $inputConfig The Apptivo app config
        *
-     * @return string The value of the attribute
+     * @return ResultObject The value of the attribute
      */
-    public static function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, object $inputConfig): ?string
+    public static function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, object $inputConfig): ResultObject
     {
-        $customAttributeIdToFind = ObjectDataUtils::getAttributeIdFromLabel($inputLabel,$inputConfig);
         if(!$inputRowObj && $inputRowObj->columns) {
-            throw new Exception('ApptivoPhp: ObjectTableUtils: getTableRowAttrValueFromLabel: This table row had no columns availalbe.');
+            return ResultObject::fail('ApptivoPhp: ObjectTableUtils: getTableRowAttrValueFromLabel: This table row had no columns availalbe.');
         }
+        $customAttributeIdToFindResult = ObjectDataUtils::getAttributeIdFromLabel($inputLabel,$inputConfig);
+        if(!$customAttributeIdToFindResult->isSuccessful) {
+            return ResultObject::fail('ApptivoPhp: ObjectTableUtils: getTableRowAttrValueFromLabel: This table row had no columns availalbe.');
+        }
+        $customAttributeIdToFind = $customAttributeIdToFindResult->payload;
         for($col=0;$col<count($inputRowObj->columns);$col++) {
             if($inputRowObj->columns[$col]->customAttributeId == $customAttributeIdToFind) {
                 //logIt('returning customAttributeValue ('.$inputRowObj->columns[$col]->customAttributeValue.') from this json: '.json_encode($inputRowObj->columns[$col]));
                 if(isset($inputRowObj->columns[$col]->customAttributeValue) && $inputRowObj->columns[$col]->customAttributeValue) {
-                    return $inputRowObj->columns[$col]->customAttributeValue;
+                    return ResultObject::success($inputRowObj->columns[$col]->customAttributeValue);
                 }elseif(isset($inputRowObj->columns[$col]->attributeValues) && isset($inputRowObj->columns[$col]->attributeValues[0]) && isset($inputRowObj->columns[$col]->attributeValues[0]->attributeValue)) {
-                    return $inputRowObj->columns[$col]->attributeValues[0]->attributeValue;
+                    return ResultObject::success($inputRowObj->columns[$col]->attributeValues[0]->attributeValue);
                 }
             }
         }
-        return '';
+        //If we cannot locate this column then we provide an empty string
+        return ResultObject::success('');
     }
 }

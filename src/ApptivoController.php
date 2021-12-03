@@ -80,13 +80,13 @@ class ApptivoController
         return ObjectDataUtils::getConfigData($appNameOrId, $this);
     }
     
-    public function getAttrDetailsFromLabel(array $fieldLabel, object $inputObj, string $appNameOrId): ?object 
+    public function getAttrDetailsFromLabel(array $fieldLabel, object $inputObj, string $appNameOrId): ResultObject 
     {
         $configData = $this->getConfigData($appNameOrId);
         return ObjectDataUtils::getAttrDetailsFromLabel($fieldLabel, $inputObj, $configData);
     }
     
-    public function getAttrSettingsObjectFromLabel(array $fieldLabel, string $appNameOrId): ?object 
+    public function getAttrSettingsObjectFromLabel(array $fieldLabel, string $appNameOrId): ResultObject 
     {
         $configData = $this->getConfigData($appNameOrId);
         return ObjectDataUtils::getSettingsAttrObjectFromLabel($fieldLabel, $configData);
@@ -98,10 +98,10 @@ class ApptivoController
         return ObjectDataUtils::createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $configData);
     }
     
-    public function setAssociatedFieldValues(string $tagName, string $newValue, object &$object, string $appNameOrId): void
+    public function setAssociatedFieldValues(string $tagName, string $newValue, object &$object, string $appNameOrId): ResultObject
     {
         $configData = $this->getConfigData($appNameOrId);
-        ObjectDataUtils::setAssociatedFieldValues($tagName, $newValue, $object, $appNameOrId, $configData, $this);
+        return ObjectDataUtils::setAssociatedFieldValues($tagName, $newValue, $object, $appNameOrId, $configData, $this);
     }
     public static function getAddressValueFromTypeAndField(string $addressType, string $addressFieldName, object $sourceModelObj): string
     {

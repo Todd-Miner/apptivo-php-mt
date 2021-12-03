@@ -24,12 +24,12 @@ final class ResultObject
         $this->payload = $payload;
     }
 
-    public static function fail($payload): ResultObject
+    public static function fail($payload = null): ResultObject
     {
         return new static(false, $payload);
     }
 
-    public static function success($payload): ResultObject
+    public static function success($payload = null): ResultObject
     {
         return new static(true, $payload);
     }

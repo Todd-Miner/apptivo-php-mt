@@ -8,6 +8,7 @@ use Exception;
 use Google\Cloud\Logging\LoggingClient;
 use Illuminate\Support\Facades\Log;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
+use ToddMinerTech\ApptivoPhp\ResultObject;
 use ToddMinerTech\DataUtils\StringUtil;
 
 /**
@@ -36,12 +37,12 @@ class SearchUtils
          *
          * @param string $extraParams Optional additional query string parameters.  This string must start with "&" like "&numRecords=50".  Must urlencode any values.
          *
-         * @return array Returns an array of search results, should be empty if no results.  Throws an exception if a valid response is not received.
+         * @return ResultObject Returns an array of search results, should be empty if no results.  Throws an exception if a valid response is not received.
          */
-        public static function getAllBySearchText(string $searchText, string $appNameOrId, ApptivoController $aApi, string $extraParams = ''): array
+        public static function getAllBySearchText(string $searchText, string $appNameOrId, ApptivoController $aApi, string $extraParams = ''): ResultObject
         {
             if(!$appNameOrId) {
-                Throw new Exception('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
+                return ResultObject::fail('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
             }
             $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
             $apiUrl = 'https://api2.apptivo.com/app/dao/v6/'.
@@ -61,10 +62,10 @@ class SearchUtils
                 $decodedApiResponse = json_decode($bodyContents);
                 $returnObj = null;
                 if($decodedApiResponse && $decodedApiResponse->data) {
-                    return $decodedApiResponse->data;
+                    return ResultObject::success($decodedApiResponse->data);
                 }
             }
-            throw new Exception('ApptivoPHP: SearchUtils: getAllBySearchText: Failed to retrieve a valid response from the Apptivo API. $searchText ('.$searchText.')  $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
+            return ResultObject::fail('ApptivoPHP: SearchUtils: getAllBySearchText: Failed to retrieve a valid response from the Apptivo API. $searchText ('.$searchText.')  $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
 	}        
         
     /* 
@@ -81,18 +82,21 @@ class SearchUtils
          *
          * @param ApptivoController $aApi Your Apptivo controller object
          *
-         * @return string Returns the matching ID or throws an exception
+         * @return ResultObject Returns the matching ID or throws an exception
          */
-        public static function getEmployeeIdFromName(string $employeeNameToFind, ApptivoController $aApi): string
+        public static function getEmployeeIdFromName(string $employeeNameToFind, ApptivoController $aApi): ResultObject
         {
-            $searchResults = $aApi->getAllBySearchText($employeeNameToFind, 'employees');
-
+            $searchResultsResult = $aApi->getAllBySearchText($employeeNameToFind, 'employees');
+            if(!$searchResultsResult-isSuccessful) {
+                return ResultObject::fail($searchResultsResult->payload);
+            }
+            $searchResults = $searchResultsResult->payload;
             foreach($searchResults as $cResult) {
                 if(StringUtil::ssComp($employeeNameToFind,$cResult->fullName)) {
-                    return (string)$cResult->employeeId;
+                    return ResultObject::success((string)$cResult->employeeId);
                 }
             }
-            throw new Exception('ApptivoPHP: SearchUtils: getEmployeeIdFromName: unable to locate  a matching employee for $employeeNameToFind ('.$employeeNameToFind.')');
+            return ResultObject::fail('ApptivoPHP: SearchUtils: getEmployeeIdFromName: unable to locate  a matching employee for $employeeNameToFind ('.$employeeNameToFind.')');
         }
     
         /**
@@ -104,20 +108,23 @@ class SearchUtils
          *
          * @param ApptivoController $aApi Your Apptivo controller object
          *
-         * @return object the complete customer object
+         * @return ResultObject the complete customer object
          */
-        public static function getCustomerObjFromName(string $customerNameToFind, ApptivoController $aApi): object
+        public static function getCustomerObjFromName(string $customerNameToFind, ApptivoController $aApi): ResultObject
         {
             //IMPROVEMENT - Extract some of this into utils
-            $searchResults = $aApi->getAllBySearchText($customerNameToFind, 'customers');
-
+            $searchResultsResult = $aApi->getAllBySearchText($customerNameToFind, 'customers');
+            if(!$searchResultsResult-isSuccessful) {
+                return ResultObject::fail($searchResultsResult->payload);
+            }
+            $searchResults = $searchResultsResult->payload;
             foreach($searchResults as $cResult) {
                 if(StringUtil::ssComp($customerNameToFind,$cResult->customerName)) {
-                    return $cResult;
+                    return ResultObject::success($cResult);
                 }
             }
             //IMPROVEMENT Get rid of exception so we can return nothing when nothing is found
-            throw new Exception('ApptivoPHP: SearchUtils: getCustomerObjFromName: unable to locate  a matching employee for $customerNameToFind ('.$customerNameToFind.')');
+            return ResultObject::fail('ApptivoPHP: SearchUtils: getCustomerObjFromName: unable to locate  a matching employee for $customerNameToFind ('.$customerNameToFind.')');
         }
     
         /**
@@ -129,9 +136,9 @@ class SearchUtils
          *
          * @param ApptivoController $aApi Your Apptivo controller object
          *
-         * @return string Returns the matching ID or throws an exception
+         * @return ResultObject Returns the matching ID or throws an exception
          */
-        public static function getCustomerIdFromName(string $customerNameToFind, ApptivoController $aApi): string
+        public static function getCustomerIdFromName(string $customerNameToFind, ApptivoController $aApi): ResultObject
         {
             return self::getCustomerObjFromName($customerNameToFind, $aApi)->customerId;
         }
@@ -149,9 +156,9 @@ class SearchUtils
          *
          * @param int $maxRecords If you want to cap the total records retrieved
          *
-         * @return array list of every Apptivo object from that app
+         * @return ResultObject list of every Apptivo object from that app
          */
-	public static function getAllRecordsInApp(string $appNameOrId,  ApptivoController $aApi, int $maxRecords = 20000): array
+	public static function getAllRecordsInApp(string $appNameOrId,  ApptivoController $aApi, int $maxRecords = 20000): ResultObject
         {
             $allSearchRecords = [];
             $i = 0;
@@ -159,8 +166,11 @@ class SearchUtils
             $loopComplete = false;
             Do {
                 $startIndex = $i * $numRecords;
-                $batchResult = self::dataManagementGetAll($appNameOrId, $aApi, $startIndex, $numRecords);
-                $batchData = $batchResult->data;
+                $batchDataResult = self::dataManagementGetAll($appNameOrId, $aApi, $startIndex, $numRecords);
+                if(!$batchDataResult->isSuccessful) {
+                    return ResultObject::fail($batchDataResult->payload);
+                }
+                $batchData = $batchDataResult->payload->data;
                 if(is_array($batchData)) {
                     $allSearchRecords = array_merge($allSearchRecords,$batchData);
                     if($batchResult->countOfRecords < $numRecords) {
@@ -172,7 +182,7 @@ class SearchUtils
                 $i++;
             }While ($loopComplete == false);
 
-            return $allSearchRecords;
+            return ResultObject::success($allSearchRecords);
         }
         
     
@@ -190,16 +200,16 @@ class SearchUtils
          *
          * @param int $numRecords Number of results to retrieve
          *
-         * @return object Object with data and countOfRecords attributes
+         * @return ResultObject Object with data and countOfRecords attributes
          */
-        private static function dataManagementGetAll(string $appNameOrId, ApptivoController $aApi, int $startIndex = 0, int $numRecords = 2000): object
+        private static function dataManagementGetAll(string $appNameOrId, ApptivoController $aApi, int $startIndex = 0, int $numRecords = 2000): ResultObject
         {
             if(!$aApi->sessionKey) {
-                Throw new Exception('ApptivoPhp: SearchUtils: dataManagementGetAll: We had no sessionData, please first call setSessionCredentials before calling dataManagementGetAll');
+                return ResultObject::fail('ApptivoPhp: SearchUtils: dataManagementGetAll: We had no sessionData, please first call setSessionCredentials before calling dataManagementGetAll');
             }
             
             if(!$appNameOrId) {
-                Throw new Exception('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
+                return ResultObject::fail('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
             }
             $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
             
@@ -229,9 +239,9 @@ class SearchUtils
                 
                 $returnObj = null;
                 if($decodedApiResponse && $decodedApiResponse->data) {
-                    return $decodedApiResponse;
+                    return ResultObject::success($decodedApiResponse);
                 }
             }
-            throw new Exception('ApptivoPHP: SearchUtils: dataManagementGetAll: Failed to retrieve a valid response from the Apptivo API. $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
+            return ResultObject::fail('ApptivoPHP: SearchUtils: dataManagementGetAll: Failed to retrieve a valid response from the Apptivo API. $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
         }
 }

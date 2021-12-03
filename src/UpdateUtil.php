@@ -60,11 +60,15 @@ class UpdateUtil
      * 
      * @param array $newValue The value(s) you want to check and update.  Provide a single value array for for single fields, or multiple if attributeValues should be verified.
      *
-     * @return void We will just update $this->object and the $this->attributeIds/Names if any change is needed
+     * @return ResultObject We will just update $this->object and the $this->attributeIds/Names if any change is needed
      */
-    public function checkAndUpdateFieldWithValue(array $fieldLabel, array $newValue): void
+    public function checkAndUpdateFieldWithValue(array $fieldLabel, array $newValue): ResultObject
     {
-        $attrDetails = $this->aApi->getAttrDetailsFromLabel($fieldLabel, $this->object, $this->appNameOrId);
+        $attrDetailsResult = $this->aApi->getAttrDetailsFromLabel($fieldLabel, $this->object, $this->appNameOrId);
+        if(!$attrDetailsResult->isSuccessful) { 
+            return ResultObject::fail('ApptivoPhP: UpdateUtil: checkAndUpdateFieldWithValue: getAttrDetailsFromLabel failed with payload:  '.$attrDetailsResult->payload);
+        }
+        $attrDetails = $attrDetailsResult->payload;
         if(isset($attrDetails->settingsAttrObj->tagName)) {
             $tagName = $attrDetails->settingsAttrObj->tagName;
         }
@@ -76,7 +80,11 @@ class UpdateUtil
                 $this->attributeNames = ArrUtil::addArrIfNew($tagName, $this->attributeNames);
                 $this->object->$tagName = $attrDetails->attrValue;
             }else{
-                $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+                $newAttrObjResult = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+                if(!$newAttrObjResult->isSuccessful) {
+                    return ResultObject::fail('ApptivoPhp: UpdateUtil: checkAndUpdateFieldWithValue: failed newAttrObjResult->payload:   '.$newAttrObjResult->payload);
+                }
+                $newAttrObj = $newAttrObjResult->payload;
                 $this->object->customAttributes[] = $newAttrObj;
                 $this->attributeIds = ArrUtil::addArrIfNew($newAttrObj->customAttributeId,$this->attributeIds);
                 $this->attributeNames = ArrUtil::addArrIfNew('customAttributes',$this->attributeNames);
@@ -114,7 +122,7 @@ class UpdateUtil
                             }
                         }
                         if(!$updateComplete) {
-                            throw new Exception('checkAndUpdateFieldWithValue:  Could not locate an address with the proper type. $fieldLabel:  '.json_encode($fieldLabel));
+                            return ResultObject::fail('checkAndUpdateFieldWithValue:  Could not locate an address with the proper type. $fieldLabel:  '.json_encode($fieldLabel));
                         }
                     }else{
                         //"Standard" Standard attributes
@@ -124,12 +132,17 @@ class UpdateUtil
             }else{
                 if(in_array($attrDetails->attrObj->customAttributeType, ['check', 'multiSelect'])) {
                     if(!isset($attrDetails->attrObj->attributeValues)) {
-                        throw new Exception('checkAndUpdateFieldWithValue: $newValue was provided with ('.count($newValue) .') values but $attrDetails->attrObj->attributeValues was not set as expected.  $attrDetails: '.json_encode($attrDetails));
+                        return ResultObject::fail('checkAndUpdateFieldWithValue: $newValue was provided with ('.count($newValue) .') values but $attrDetails->attrObj->attributeValues was not set as expected.  $attrDetails: '.json_encode($attrDetails));
                     }
                     for($i = 0; $i < count($attrDetails->attrObj->attributeValues); $i++) {
                         if(!StringUtil::sComp($attrDetails->attrObj->attributeValues[$i],$newValue[$i])) {
                             log::debug('checkAndUpdateFieldWithValue: Different values detected for multi select field.  Will update complete attriubte.  Existing values: '.json_encode($attrDetails->attrObj->attributeValues).'    New Values: '.json_encode($newValue));
                             $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+                            $newAttrObjResult = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+                            if(!$newAttrObjResult->isSuccessful) {
+                                return ResultObject::fail('ApptivoPhp: UpdateUtil: checkAndUpdateFieldWithValue: failed newAttrObjResult->payload:   '.$newAttrObjResult->payload);
+                            }
+                            $newAttrObj = $newAttrObjResult->payload;
                             $this->object->customAttributes[$attrDetails->attrIndex] = $newAttrObj;
                             $this->attributeIds = ArrUtil::addArrIfNew($newAttrObj->customAttributeId,$this->attributeIds);
                             $this->attributeNames = ArrUtil::addArrIfNew('customAttributes',$this->attributeNames);
@@ -139,7 +152,11 @@ class UpdateUtil
                 }else{
                     if(!StringUtil::sComp($attrDetails->attrValue, $newValue[0])) {
                         log::debug('checkAndUpdateFieldWithValue: Different value detected for single value field.  Will update complete attriubte.  Existing value: '.$attrDetails->attrValue.'    New Value: '.$newValue[0]);
-                        $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+                        $newAttrObjResult = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+                        if(!$newAttrObjResult->isSuccessful) {
+                            return ResultObject::fail('ApptivoPhp: UpdateUtil: checkAndUpdateFieldWithValue: failed newAttrObjResult->payload:   '.$newAttrObjResult->payload);
+                        }
+                        $newAttrObj = $newAttrObjResult->payload;
                         $this->object->customAttributes[$attrDetails->attrIndex] = $newAttrObj;
                         $this->attributeIds = ArrUtil::addArrIfNew($newAttrObj->customAttributeId,$this->attributeIds);
                         $this->attributeNames = ArrUtil::addArrIfNew('customAttributes',$this->attributeNames);
@@ -147,6 +164,7 @@ class UpdateUtil
                 }
             }
         }
+        return ResultObject::success();
     }
     /**
      * updateObject
@@ -159,7 +177,8 @@ class UpdateUtil
     {
         if(count($this->attributeIds) > 0 || count($this->attributeNames) > 0) {
             $isCustomAttributeUpdate = false;
-            if(in_array('customAttributes',$this->attributeNames)) {
+            //dev temp - checking if attributeids restriction works
+            if(in_array('customAttributes',$this->attributeNames) && count($this->attributeIds) > 0) {
                 $isCustomAttributeUpdate = true;
             }
             $isAddressUpdate = false;

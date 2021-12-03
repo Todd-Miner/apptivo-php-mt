@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use ToddMinerTech\DataUtils\StringUtil;
 use ToddMinerTech\DataUtils\ArrUtil;
 use ToddMinerTech\ApptivoPhp\ResultObject;
+use ToddMinerTech\ApptivoPhp\Exceptions;
 
 /**
  * Class CreateUtil
@@ -55,12 +56,16 @@ class CreateUtil
      * 
      * @param array $newValue The value(s) you want to set.  Provide a single value array for for single fields, or multiple if attributeValues should be verified.
      *
-     * @return void We will just update $this->object as a result
+     * @return ResultObject We will update $this->object as a result, but also return a status.  No payload on success.
      */
-    public function setAttributeValue(array $fieldLabel, array $newValue): void
+    public function setAttributeValue(array $fieldLabel, array $newValue): ResultObject
     {
         //Otherwise set the value by detecting if this is a standard or custom attribute first
-        $settingsAttrObj = $this->aApi->getAttrSettingsObjectFromLabel($fieldLabel, $this->appNameOrId);
+        $settingsAttrObjResult = $this->aApi->getAttrSettingsObjectFromLabel($fieldLabel, $this->appNameOrId);
+        if(!$settingAttrObjResult->isSuccessful) {
+            return ResultObject::fail($settingsAttrObjResult->payload);
+        }
+        $settingsAttrObj = $settingsAttrObjResult->payload;
         if(isset($settingsAttrObj->tagName)) {
             $tagName = $settingsAttrObj->tagName;
         }
@@ -68,7 +73,7 @@ class CreateUtil
             //IMPROVEMENT Need to add proper support for multi select standard attributes like we support for custom attributes below.  For now we only support 1 input value for standard.
             //IMPROVEMENT Consider some method to take care of associated fields.  For example assigneeObjectRefName/RefId, or StatusName and StatusId
             if(count($newValue) > 1) {
-                throw new Exception('ApptivoPHP: CreateUtil: setAttributeValue: More than 1 value provided for a standard attribute.  Only single values are accepted for standard attributes right now.  $fieldLabel ( '.json_encode($fieldLabel).' )   $newValue ( '.json_encode($newValue).' )');
+                return ResultObject::fail('ApptivoPHP: CreateUtil: setAttributeValue: More than 1 value provided for a standard attribute.  Only single values are accepted for standard attributes right now.  $fieldLabel ( '.json_encode($fieldLabel).' )   $newValue ( '.json_encode($newValue).' )');
             }
             $this->aApi->setAssociatedFieldValues($tagName, $newValue[0], $this->object, $this->appNameOrId);
 
@@ -85,6 +90,7 @@ class CreateUtil
             $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
             $this->object->customAttributes[] = $newAttrObj;
         }
+        return ResultObject::success();
     }
     /**
      * createObject
@@ -104,7 +110,7 @@ class CreateUtil
                     !isset($this->object->assigneeObjectRefId) || !$this->object->assigneeObjectRefId ||
                     !isset($this->object->assigneeObjectId) || !$this->object->assigneeObjectId
                 ) {
-                    throw new Exception('ApptivoPhp: CreateUtil: createObject: Customer object is missing a required value. $this->object->assigneeObjectRefName ('.$this->object->assigneeObjectRefName.')  $this->object->assigneeObjectRefId ('.$this->object->assigneeObjectRefId.') $this->object->assigneeObjectId ('.$this->object->assigneeObjectId.')');
+                    return ResultObject::fail('ApptivoPhp: CreateUtil: createObject: Customer object is missing a required value. $this->object->assigneeObjectRefName ('.$this->object->assigneeObjectRefName.')  $this->object->assigneeObjectRefId ('.$this->object->assigneeObjectRefId.') $this->object->assigneeObjectId ('.$this->object->assigneeObjectId.')');
                 }
                 break;
         }
