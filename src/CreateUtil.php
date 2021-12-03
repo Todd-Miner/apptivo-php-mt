@@ -9,6 +9,7 @@ use Google\Cloud\Logging\LoggingClient;
 use Illuminate\Support\Facades\Log;
 use ToddMinerTech\DataUtils\StringUtil;
 use ToddMinerTech\DataUtils\ArrUtil;
+use ToddMinerTech\ApptivoPhp\ResultObject;
 
 /**
  * Class CreateUtil
@@ -90,9 +91,9 @@ class CreateUtil
      * 
      * Perform the API save for an object in Apptivo
      *
-     * @return object Returns the decoded json response from the Apptivo API
+     * @return ResultObject
      */
-    public function createObject(): object
+    public function createObject(): ResultObject
     {
         //Here we perform any validations before creation.
         //IMPROVEMENT Add more validation and extract to a more modular app-by-app solution

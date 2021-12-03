@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use ToddMinerTech\DataUtils\CountryStateUtil;
 use ToddMinerTech\DataUtils\StringUtil;
 use ToddMinerTech\DataUtils\ArrUtil;
+use ToddMinerTech\ApptivoPhp\ResultObject;
 
 /**
  * Class UpdateUtil
@@ -152,9 +153,9 @@ class UpdateUtil
      * 
      * Perform the API update for an object in Apptivo if any attributeIds are flagged
      *
-     * @return object Returns the decoded json response from the Apptivo API
+     * @return ResultObject 
      */
-    public function updateObject(): object
+    public function updateObject(): ResultObject
     {
         if(count($this->attributeIds) > 0 || count($this->attributeNames) > 0) {
             $isCustomAttributeUpdate = false;
@@ -167,7 +168,7 @@ class UpdateUtil
             }
             return ObjectCrud::update($this->appNameOrId, $this->attributeNames, $this->attributeIds, $this->object, $isCustomAttributeUpdate, $isAddressUpdate, $this->aApi);
         }else{
-            return $this->object;
+            return ResultObject::fail('No updates needed for this object.');
         }
     }
             
