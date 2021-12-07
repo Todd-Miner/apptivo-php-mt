@@ -117,6 +117,7 @@ class ObjectDataUtils
                 }
             }else{
                 $attributeDetails->attrValue = $inputObj->$tagName;
+                return ResultObject::success($attributeDetails);
             }    
         } else if (isset($inputObj->customAttributes)){
             for($i = 0; $i < count($inputObj->customAttributes); $i++) {

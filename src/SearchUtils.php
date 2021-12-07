@@ -49,14 +49,20 @@ class SearchUtils
                     $appParams->objectUrlName.
                     '?a=getAllBySearchText'.
                     '&searchText='.urlencode($searchText).
-                    $extraParams.
-                    '&apiKey='.$aApi->getApiKey().
-                    '&accessKey='.$aApi->getAccessKey();
+                    '&objectId='.$appParams->objectId.
+                    $extraParams;
 
+            $postFormParams = [
+                'apiKey' => $aApi->getApiKey(),
+                'accessKey' => $aApi->getAccessKey()
+            ];
+            
             $client = new \GuzzleHttp\Client();
             for($i = 1; $i <= $aApi->apiRetries+1; $i++) {
                 sleep($aApi->apiSleepTime);
-                $res = $client->request('GET', $apiUrl);
+                $res = $client->request('POST', $apiUrl, [
+                    'form_params' => $postFormParams
+                ]);
                 $body = $res->getBody();
                 $bodyContents = $body->getContents();
                 $decodedApiResponse = json_decode($bodyContents);
@@ -254,7 +260,7 @@ class SearchUtils
          *
          * @param array $fieldToMatch The field name we use to match this record.  Must be an array as per standard conventions to work with attributes.
          *
-         * @param string $valueToMatch The value we will locate within fieldToMatch 
+         * @param string $valueToMatch The regex value we will locate within fieldToMatch 
          *
          * @param ApptivoController $aApi Your Apptivo controller object
          *
@@ -277,7 +283,9 @@ class SearchUtils
                 if(!$currentFieldValueResult->isSuccessful) {
                     return ResultObject::fail($currentFieldValueResult->payload);
                 }
-                if(StringUtil::ssComp($valueToMatch,$currentFieldValueResult->payload->attrValue)) {
+                $matches = null;
+                preg_match($valueToMatch, $currentFieldValueResult->payload->attrValue, $matches);
+                if($matches) {
                     return ResultObject::success($cResult);
                 }
             }
