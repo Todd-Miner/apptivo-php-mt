@@ -230,7 +230,7 @@ class ObjectTableUtils
         $foundAttr = false;
         foreach($sections as $cSection) {
             $sectionName = $cSection->label;
-            if(sComp($sectionName,$inputLabel)) {
+            if(StringUtil::sComp($sectionName,$inputLabel)) {
                 return ResultObject::success($cSection);
             }
         }
