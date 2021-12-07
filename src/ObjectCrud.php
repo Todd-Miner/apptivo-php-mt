@@ -222,6 +222,8 @@ class ObjectCrud
             } else if ($decodedApiResponse && isset($decodedApiResponse->customer)) {
                 return ResultObject::success($decodedApiResponse->customer);
                 //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
+            } else if ($decodedApiResponse && isset($decodedApiResponse->csCase)) {
+                return ResultObject::success($decodedApiResponse->csCase);
             }
         }
         return ResultObject::fail('ApptivoPHP: ObjectCrud: update - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')   json_encode($objectData):    '.json_encode($objectData));
