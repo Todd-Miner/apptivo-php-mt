@@ -134,7 +134,7 @@ class ObjectTableUtils
        *
      * @return ResultObject The value of the attribute
      */
-    public static function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, object $inputConfig): ResultObject
+    public static function getTableRowAttrValueFromLabel(string|array $inputLabel, object $inputRowObj, object $inputConfig): ResultObject
     {
         if(!$inputRowObj && $inputRowObj->columns) {
             return ResultObject::fail('ApptivoPhp: ObjectTableUtils: getTableRowAttrValueFromLabel: This table row had no columns availalbe.');

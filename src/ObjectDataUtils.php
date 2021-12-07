@@ -653,7 +653,7 @@ class ObjectDataUtils
      *
      * @return ResultObject The customAttributeId for this label
      */
-    public static function getAttributeIdFromLabel(string $inputLabel, object $inputConfig): ResultObject
+    public static function getAttributeIdFromLabel(string|array $inputLabel, object $inputConfig): ResultObject
     {
         if(!$inputConfig) {
             return ResultObject::fail('getAttrValue - no valid config or app id provided.');
