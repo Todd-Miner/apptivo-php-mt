@@ -260,7 +260,7 @@ class SearchUtils
          *
          * @return ResultObject The first object we match from the search results
          */
-        public function getObjectFromKeywordSearchAndCriteria(array $fieldToMatch, string $valueToMatch, string $appNameOrId, ApptivoController $aApi): ResultObject
+        public static function getObjectFromKeywordSearchAndCriteria(array $fieldToMatch, string $valueToMatch, string $appNameOrId, ApptivoController $aApi): ResultObject
         {
             if(!$appNameOrId) {
                 return ResultObject::fail('ApptivoPhp: SearchUtils: getObjectFromSearchCriteria: Missing $appNameOrId');
