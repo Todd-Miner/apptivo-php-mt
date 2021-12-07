@@ -157,4 +157,58 @@ class ObjectTableUtils
         //If we cannot locate this column then we provide an empty string
         return ResultObject::success('');
     }
+    
+    /**
+     * getTableRowNoteAttributeObj
+     * 
+     *  Pass in a label for a table section, then we will return the settings attribute object
+     *  Used to get attributeId and tagName to build the row note object to insert new table attribute rows
+     *
+     * @param string $inputLabel custom attribute label
+     *
+     * @param object $inputConfig The Apptivo app config
+     *
+     * @param ApptivoController $aApi The Apptivo controller obj
+       *
+     * @return ResultObject The value of the attribute
+     */
+    function getTableRowNoteAttributeObj(string $inputLabel, object $inputConfig, ApptivoController $aApi): ResultObject
+    {
+        $tableSection = $aApi->getTableSectionAttributeObjFromLabel($inputLabel, $inputConfig);
+        if(!$tableSection || !$tableSection->attributes) {
+            return ResultObject::Fail('ERROR: getTableRowNoteAttributeObj: Unable to get table section object from inputLabel ('.$inputLabel.')');
+        }
+        for($i = 0;$i < count($tableSection->attributes);$i++) {
+            if($tableSection->attributes[$i]->isRowNote == true) {
+                return ResultObject::success($tableSection->attributes[$i]);
+            }
+        }
+        return ResultObject::fail('ERROR: getTableRowNoteAttributeObj: Unable to find rowNote attribute even though we located the table for inputLabel ('.$inputLabel.')');
+    }
+    
+    /**
+     * getTableSectionAttributeObjFromLabel
+     * 
+     *  Will return either false, or the string with the customAttribuiteId for a provided label and app config
+     *
+     * @param string $inputLabel custom attribute label
+     *
+     * @param object $inputConfig The Apptivo app config
+       *
+     * @return ResultObject The value of the attribute
+     */
+    function getTableSectionAttributeObjFromLabel(string $inputLabel, object $inputConfig): ResultObject
+    {
+        $webLayout = $inputConfig->webLayout;
+        $sectionsNode = json_decode($webLayout);
+        $sections = $sectionsNode->sections;
+        $foundAttr = false;
+        foreach($sections as $cSection) {
+            $sectionName = $cSection->label;
+            if(sComp($sectionName,$inputLabel)) {
+                return ResultObject::success($cSection);
+            }
+        }
+        return ResultObject::fail('getTableSectionAttributeIdFromLabel: Could not find our attribute to get a value from, check label ('.$inputLabel.')');
+    }
 }
