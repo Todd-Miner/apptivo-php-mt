@@ -197,7 +197,7 @@ class ObjectTableUtils
        *
      * @return ResultObject The value of the attribute
      */
-    function getTableRowNoteAttributeObj(string $inputLabel, object $inputConfig, ApptivoController $aApi): ResultObject
+    public static function getTableRowNoteAttributeObj(string $inputLabel, object $inputConfig, ApptivoController $aApi): ResultObject
     {
         $tableSection = $aApi->getTableSectionAttributeObjFromLabel($inputLabel, $inputConfig);
         if(!$tableSection || !$tableSection->attributes) {
@@ -222,7 +222,7 @@ class ObjectTableUtils
        *
      * @return ResultObject The value of the attribute
      */
-    function getTableSectionAttributeObjFromLabel(string $inputLabel, object $inputConfig): ResultObject
+    public static function getTableSectionAttributeObjFromLabel(string $inputLabel, object $inputConfig): ResultObject
     {
         $webLayout = $inputConfig->webLayout;
         $sectionsNode = json_decode($webLayout);
