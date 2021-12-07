@@ -128,7 +128,7 @@ class ApptivoController
     {
         return ObjectTableUtils::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
     }  
-    public function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, string $appNameOrId): ResultObject
+    public function getTableRowAttrValueFromLabel(string|array $inputLabel, object $inputRowObj, string $appNameOrId): ResultObject
     {
         $configData = $this->getConfigData($appNameOrId);
         return ObjectTableUtils::getTableRowAttrValueFromLabel($inputLabel, $inputRowObj, $configData);
