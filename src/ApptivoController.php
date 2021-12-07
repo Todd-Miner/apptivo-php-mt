@@ -143,6 +143,11 @@ class ApptivoController
         $configData = $this->getConfigData($appNameOrId);
         return ObjectTableUtils::getTableSectionAttributeObjFromLabel($inputLabel, $configData);
     }
+    public function getTableSectionAttributeIndexFromLabel(string $inputLabel, object $inputObject, string $appNameOrId): ResultObject
+    {
+        $configData = $this->getConfigData($appNameOrId);
+        return ObjectTableUtils::getTableSectionAttributeIndexFromLabel($inputLabel, $inputObject, $configData);
+    }
     
     /* SearchUtils 
      * 

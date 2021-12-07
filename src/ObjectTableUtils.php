@@ -199,13 +199,13 @@ class ObjectTableUtils
      */
     public static function getTableRowNoteAttributeObj(string $inputLabel, object $inputConfig, ApptivoController $aApi): ResultObject
     {
-        $tableSection = self::getTableSectionAttributeObjFromLabel($inputLabel, $inputConfig);
-        if(!$tableSection || !$tableSection->attributes) {
-            return ResultObject::Fail('ERROR: getTableRowNoteAttributeObj: Unable to get table section object from inputLabel ('.$inputLabel.')');
+        $tableSectionResult = self::getTableSectionAttributeObjFromLabel($inputLabel, $inputConfig);
+        if(!$tableSectionResult->isSuccessful) {
+            return $tableSectionResult;
         }
-        for($i = 0;$i < count($tableSection->attributes);$i++) {
-            if($tableSection->attributes[$i]->isRowNote == true) {
-                return ResultObject::success($tableSection->attributes[$i]);
+        for($i = 0;$i < count($tableSectionResult->payload->attributes);$i++) {
+            if($tableSectionResult->payload->attributes[$i]->isRowNote == true) {
+                return ResultObject::success($tableSectionResult->payload->attributes[$i]);
             }
         }
         return ResultObject::fail('ERROR: getTableRowNoteAttributeObj: Unable to find rowNote attribute even though we located the table for inputLabel ('.$inputLabel.')');
