@@ -197,7 +197,7 @@ class ObjectTableUtils
        *
      * @return ResultObject The value of the attribute
      */
-    public static function getTableRowNoteAttributeObj(string $inputLabel, objectobject $inputConfig, ApptivoController $aApi): ResultObject
+    public static function getTableRowNoteAttributeObj(string $inputLabel, object $inputConfig, ApptivoController $aApi): ResultObject
     {
         $tableSection = self::getTableSectionAttributeObjFromLabel($inputLabel, $inputConfig);
         if(!$tableSection || !$tableSection->attributes) {
