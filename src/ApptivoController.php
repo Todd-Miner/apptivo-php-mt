@@ -67,7 +67,7 @@ class ApptivoController
     /* ObjectCrud 
      * 
      */
-    public function read(string $appNameOrId, string $objectId): object 
+    public function read(string $appNameOrId, string $objectId): ResultObject 
     {
         return ObjectCrud::read($appNameOrId, $objectId, $this);
     }
@@ -92,7 +92,7 @@ class ApptivoController
         return ObjectDataUtils::getSettingsAttrObjectFromLabel($fieldLabel, $configData);
     }
     
-    public function createNewAttrObjFromLabelAndValue(array $fieldLabel, array $newValue, string $appNameOrId): object 
+    public function createNewAttrObjFromLabelAndValue(array $fieldLabel, array $newValue, string $appNameOrId): ResultObject 
     {
         $configData = $this->getConfigData($appNameOrId);
         return ObjectDataUtils::createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $configData);
@@ -103,7 +103,7 @@ class ApptivoController
         $configData = $this->getConfigData($appNameOrId);
         return ObjectDataUtils::setAssociatedFieldValues($tagName, $newValue, $object, $appNameOrId, $configData, $this);
     }
-    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFieldName, object $sourceModelObj): string
+    public static function getAddressValueFromTypeAndField(string $addressType, string $addressFieldName, object $sourceModelObj): ResultObject
     {
         return ObjectDataUtils::getAddressValueFromTypeAndField($addressType, $addressFieldName, $sourceModelObj);
     }
@@ -111,21 +111,21 @@ class ApptivoController
     /* ObjectTableUtils 
      * 
      */  
-    public function getTableSectionRowsFromSectionLabel(string $sectionLabel, object $objectData, string $appNameOrId): ?array
+    public function getTableSectionRowsFromSectionLabel(string $sectionLabel, object $objectData, string $appNameOrId): ResultObject
     {
         $configData = $this->getConfigData($appNameOrId);
         $tableSectionId = ObjectTableUtils::getTableSectionAttributeIdFromLabel($sectionLabel, $configData);
         return self::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
     }
-    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ?int
+    public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ResultObject
     {
         return ObjectTableUtils::getTableRowColIndexFromAttributeId($customAttributeId, $tableRowObj);
     }  
-    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ?array
+    public static function getTableSectionRowsFromSectionId(string $tableSectionId, object $objectData): ResultObject
     {
         return ObjectTableUtils::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
     }  
-    public function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, string $appNameOrId): ?string
+    public function getTableRowAttrValueFromLabel(string $inputLabel, object $inputRowObj, string $appNameOrId): ResultObject
     {
         $configData = $this->getConfigData($appNameOrId);
         return ObjectTableUtils::getTableRowAttrValueFromLabel($inputLabel, $inputRowObj, $configData);
@@ -134,26 +134,26 @@ class ApptivoController
     /* SearchUtils 
      * 
      */  
-    public function getAllBySearchText(string $searchText, string $appNameOrId): array
+    public function getAllBySearchText(string $searchText, string $appNameOrId): ResultObject
     {
         return SearchUtils::getAllBySearchText($searchText, $appNameOrId, $this);
     }
     
-    public function getEmployeeIdFromName(string $employeeNameToFind): string
+    public function getEmployeeIdFromName(string $employeeNameToFind): ResultObject
     {
         return SearchUtils::getEmployeeIdFromName($employeeNameToFind, $this);
     }
     
-    public function getCustomerObjFromName(string $customerNameToFind): object
+    public function getCustomerObjFromName(string $customerNameToFind): ResultObject
     {
         return SearchUtils::getCustomerObjFromName($customerNameToFind, $this);
     }
     
-    public function getCustomerIdFromName(string $customerNameToFind): string
+    public function getCustomerIdFromName(string $customerNameToFind): ResultObject
     {
         return SearchUtils::getCustomerIdFromName($customerNameToFind, $this);
     }
-    public function getAllRecordsInApp(string $appNameOrId, int $maxRecords = 20000): array
+    public function getAllRecordsInApp(string $appNameOrId, int $maxRecords = 20000): ResultObject
     {
         return SearchUtils::getAllRecordsInApp($appNameOrId, $this, $maxRecords);
     }
