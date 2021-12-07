@@ -114,8 +114,11 @@ class ApptivoController
     public function getTableSectionRowsFromSectionLabel(string $sectionLabel, object $objectData, string $appNameOrId): ResultObject
     {
         $configData = $this->getConfigData($appNameOrId);
-        $tableSectionId = ObjectTableUtils::getTableSectionAttributeIdFromLabel($sectionLabel, $configData);
-        return self::getTableSectionRowsFromSectionId($tableSectionId, $objectData);
+        $tableSectionIdResult = ObjectTableUtils::getTableSectionAttributeIdFromLabel($sectionLabel, $configData);
+        if(!$tableSectionIdResult->isSuccessful) {
+            return $tableSectionIdResult;
+        }
+        return self::getTableSectionRowsFromSectionId($tableSectionIdResult->payload, $objectData);
     }
     public static function getTableRowColIndexFromAttributeId(string $customAttributeId, object $tableRowObj): ResultObject
     {
