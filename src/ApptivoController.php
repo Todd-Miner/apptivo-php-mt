@@ -157,6 +157,10 @@ class ApptivoController
     {
         return SearchUtils::getAllRecordsInApp($appNameOrId, $this, $maxRecords);
     }
+    public function getObjectFromKeywordSearchAndCriteria(array $fieldToMatch, string $valueToMatch, string $appNameOrId): ResultObject
+    {
+        return SearchUtils::getObjectFromKeywordSearchAndCriteria($fieldToMatch, $valueToMatch, $appNameOrId, $this);
+    }
     
     /* Get/Set 
      * 

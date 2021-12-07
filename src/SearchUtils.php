@@ -184,7 +184,6 @@ class SearchUtils
 
             return ResultObject::success($allSearchRecords);
         }
-        
     
         /**
          * dataManagementGetAll
@@ -243,5 +242,45 @@ class SearchUtils
                 }
             }
             return ResultObject::fail('ApptivoPHP: SearchUtils: dataManagementGetAll: Failed to retrieve a valid response from the Apptivo API. $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
+        }
+        
+        /**
+         * getObjectFromKeywordSearchAndCriteria
+         * 
+         * Uses special data management endpoint designed to retrieve data in bulk.
+         * Use this when trying to load data for mass processing rather than search for specific records.
+         *
+         * @param string $appNameOrId The Apptivo name or app id
+         *
+         * @param array $fieldToMatch The field name we use to match this record.  Must be an array as per standard conventions to work with attributes.
+         *
+         * @param string $valueToMatch The value we will locate within fieldToMatch 
+         *
+         * @param ApptivoController $aApi Your Apptivo controller object
+         *
+         * @return ResultObject The first object we match from the search results
+         */
+        public function getObjectFromKeywordSearchAndCriteria(array $fieldToMatch, string $valueToMatch, string $appNameOrId, ApptivoController $aApi): ResultObject
+        {
+            if(!$appNameOrId) {
+                return ResultObject::fail('ApptivoPhp: SearchUtils: getObjectFromSearchCriteria: Missing $appNameOrId');
+            }
+            if(!$fieldToMatch) {
+                return ResultObject::fail('ApptivoPhp: SearchUtils: getObjectFromSearchCriteria: Missing $fieldToMatch');
+            }
+            $resultObject = $aApi->getAllBySearchText($valueToMatch, $appNameOrId);
+            if(!$resultObject->isSuccessful) {
+                return ResultObject::fail($resultObject->payload);
+            }
+            foreach($resultObject->payload as $cResult) {
+                $currentFieldValueResult = $aApi->getAttrDetailsFromLabel($fieldToMatch, $cResult, $appNameOrId);
+                if(!$currentFieldValueResult->isSuccessful) {
+                    return ResultObject::fail($currentFieldValueResult->payload);
+                }
+                if(StringUtil::ssComp($valueToMatch,$currentFieldValueResult->payload->attrValue)) {
+                    return ResultObject::success($cResult);
+                }
+            }
+            return ResultObject::fail('ApptivoPhp: SearchUtils: getObjectFromKeywordSearchAndCriteria: Unable to locate a match for this search. $fieldToMatch:  '.json_encode($fieldToMatch).'   $valueToMatch ('.$valueToMatch.')   $appNameOrId ('.$appNameOrId.')');
         }
 }
