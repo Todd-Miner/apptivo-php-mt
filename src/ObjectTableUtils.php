@@ -75,6 +75,31 @@ class ObjectTableUtils
     }
     
     /**
+     * getTableSectionAttributeIndexFromLabel
+     * 
+     * Provide a customAttributeId to get the index of the column where the attribute exists.  Columns are built based on order the attribute was added from within Apptivo, not consistent.
+     *
+     * @param string $inputLabel The section attribute label for the table section
+     *
+     * @param object $inputConfig The Apptivo app config data
+       *
+     * @return ResultObject Will return the table section attribute index within customAttributes array
+     */
+    public static function getTableSectionAttributeIndexFromLabel(string $inputLabel, object $inputObject, object $inputConfig): ResultObject
+    {
+        $tableSectionAttrResult = self::getTableSectionAttributeIdFromLabel($inputLabel, $inputConfig);
+        if(!$tableSectionAttrResult->isSuccessful) {
+            return $tableSectionAttrResult;
+        }
+        for($i = 0; count($inputObject->customAttributes); $i++) {
+            if(StringUtil::sComp($inputObject->customAttributes[$i]->customAttributeId, $tableSectionAttrResult->payload)) {
+                return ResultObject::success($i);
+            }
+        }
+        return ResultObject::fail('ApptivoPhp: OBjectTableUtils: getTableSectionAttributeIndexFromLabel: Could not find our attribute to get an index from $inputLabel ('.$inputLabel.')',true);
+    }
+    
+    /**
      * getTableSectionRowsFromSectionId
      * 
      * Get the row data from a table section in and Apptivo object
