@@ -78,7 +78,7 @@ class UpdateUtil
             if($attrDetails->settingsAttrObj->type == 'Standard') {
                 $this->attributeIds = ArrUtil::addArrIfNew($attrDetails->settingsAttrObj->attributeId, $this->attributeIds);
                 $this->attributeNames = ArrUtil::addArrIfNew($tagName, $this->attributeNames);
-                $this->object->$tagName = $attrDetails->attrValue;
+                $this->object->$tagName = $newValue[0];
             }else{
                 $newAttrObjResult = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
                 if(!$newAttrObjResult->isSuccessful) {
