@@ -71,7 +71,7 @@ class UpdateUtil
         }
         $needsNewAttribute = false;
         if(!$attrDetails->attrObj) {
-            log::debug('checkAndUpdateFieldWithValue: This value is not present yet, we need to create a new attribute object to insert into our object.');
+            //log::debug('checkAndUpdateFieldWithValue: This value is not present yet, we need to create a new attribute object to insert into our object.');
             if($attrDetails->settingsAttrObj->type == 'Standard') {
                 $this->attributeIds = ArrUtil::addArrIfNew($attrDetails->settingsAttrObj->attributeId, $this->attributeIds);
                 $this->attributeNames = ArrUtil::addArrIfNew($tagName, $this->attributeNames);
@@ -90,7 +90,7 @@ class UpdateUtil
             //This attribute is present, now we check if it needs to be updated
             if($attrDetails->settingsAttrObj->type == 'Standard') {
                 if(!StringUtil::sComp($attrDetails->attrValue, $newValue[0])) {
-                    log::debug('checkAndUpdateFieldWithValue: Different value detected for single value field.  Will update complete attriubte.  Existing value: '.$attrDetails->attrValue.'    New Value: '.$newValue[0]);
+                    //log::debug('checkAndUpdateFieldWithValue: Different value detected for single value field.  Will update complete attriubte.  Existing value: '.$attrDetails->attrValue.'    New Value: '.$newValue[0]);
                     if(isset($attrDetails->settingsAttrObj->addressAttributeId) && $attrDetails->settingsAttrObj->addressAttributeId) {
                         $this->attributeIds = ArrUtil::addArrIfNew($attrDetails->settingsAttrObj->addressAttributeId, $this->attributeIds);
                         $this->attributeNames = ArrUtil::addArrIfNew('address', $this->attributeNames);
@@ -133,7 +133,7 @@ class UpdateUtil
                     }
                     for($i = 0; $i < count($attrDetails->attrObj->attributeValues); $i++) {
                         if(!StringUtil::sComp($attrDetails->attrObj->attributeValues[$i],$newValue[$i])) {
-                            log::debug('checkAndUpdateFieldWithValue: Different values detected for multi select field.  Will update complete attriubte.  Existing values: '.json_encode($attrDetails->attrObj->attributeValues).'    New Values: '.json_encode($newValue));
+                            //log::debug('checkAndUpdateFieldWithValue: Different values detected for multi select field.  Will update complete attriubte.  Existing values: '.json_encode($attrDetails->attrObj->attributeValues).'    New Values: '.json_encode($newValue));
                             $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
                             $newAttrObjResult = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
                             if(!$newAttrObjResult->isSuccessful) {
@@ -148,7 +148,7 @@ class UpdateUtil
                     }
                 }else{
                     if(!StringUtil::sComp($attrDetails->attrValue, $newValue[0])) {
-                        log::debug('checkAndUpdateFieldWithValue: Different value detected for single value field.  Will update complete attriubte.  Existing value: '.$attrDetails->attrValue.'    New Value: '.$newValue[0]);
+                        //log::debug('checkAndUpdateFieldWithValue: Different value detected for single value field.  Will update complete attriubte.  Existing value: '.$attrDetails->attrValue.'    New Value: '.$newValue[0]);
                         $newAttrObjResult = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
                         if(!$newAttrObjResult->isSuccessful) {
                             return ResultObject::fail('ApptivoPhp: UpdateUtil: checkAndUpdateFieldWithValue: failed newAttrObjResult->payload:   '.$newAttrObjResult->payload);

@@ -17,7 +17,7 @@
         }
     ],
     "require": {
-        "php" : ">=7.2.4",
+        "php" : ">=8.0",
         "guzzlehttp/guzzle": "^7.0",
         "toddminertech/minertechdatautils": "dev-master"
     },
