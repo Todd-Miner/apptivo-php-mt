@@ -29,12 +29,9 @@ class EmailUtil
      */
     public static function sendEmail(object $emailData, ApptivoController $aApi): ResultObject
     {
-        //dev temp - original query params
-        //'&objectId='.$objectId.'&objectRefId='.$objectRefId.'&isFromApp='.$isFromApp.'&closeObject='.$closeObject.'
-
         $apiUrl = 'https://api2.apptivo.com/app/dao/emails'.
-                '?a=send&'.
-                $aApi->getUserNameStr();
+            '?a=send&'.
+            $aApi->getUserNameStr();
 
         $postFormParams = [
             'emailData' => json_encode($emailData),
