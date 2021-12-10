@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace ToddMinerTech\ApptivoPhp;
 
 use Exception;
-use Google\Cloud\Logging\LoggingClient;
-use Illuminate\Support\Facades\Log;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
 use ToddMinerTech\DataUtils\StringUtil;
 

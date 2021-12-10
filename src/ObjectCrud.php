@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ToddMinerTech\ApptivoPhp;
 
-use Exception;
 use ToddMinerTech\ApptivoPhp\AppParams;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
 use ToddMinerTech\ApptivoPhp\Exceptions\RuntimeGetConfigException;
@@ -57,17 +56,19 @@ class ObjectCrud
             '&objectId='.$appParams->objectId.
             '&appId='.$appParams->objectId.
             $extraParams.
-            '&apiKey='.$aApi->getApiKey().
-            '&accessKey='.$aApi->getAccessKey().
             $aApi->getUserNameStr();        
         
+        $postFormParams = [
+            $appParams->objectDataName => json_encode($objectData),
+            'apiKey' => $aApi->getApiKey(),
+            'accessKey' => $aApi->getAccessKey()
+        ];
+
         $client = new \GuzzleHttp\Client();
         for($i = 1; $i <= $aApi->apiRetries+1; $i++) {
             sleep($aApi->apiSleepTime);
             $res = $client->request('POST', $apiUrl, [
-                'form_params' => [
-                    $appParams->objectDataName => json_encode($objectData)
-                ]
+                'form_params' => $postFormParams
             ]);
             $body = $res->getBody();
             $bodyContents = $body->getContents();
@@ -198,16 +199,18 @@ class ObjectCrud
             $addressAttrString.
             $extraParams.
             $aApi->getUserNameStr();
+        
+        $postFormParams = [
+            $appParams->objectDataName => json_encode($objectData),
+            'apiKey' => $aApi->getApiKey(),
+            'accessKey' => $aApi->getAccessKey()
+        ];
 
         $client = new \GuzzleHttp\Client();
         for($i = 1; $i <= $aApi->apiRetries+1; $i++) {
             sleep($aApi->apiSleepTime);
             $res = $client->request('POST', $apiUrl, [
-                'form_params' => [
-                    $appParams->objectDataName => json_encode($objectData),
-                    'apiKey' => $aApi->getApiKey(),
-                    'accessKey' => $aApi->getAccessKey()
-                ]
+                'form_params' => $postFormParams
             ]);
             $body = $res->getBody();
             $bodyContents = $body->getContents();
