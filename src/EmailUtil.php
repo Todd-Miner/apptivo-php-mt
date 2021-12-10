@@ -17,16 +17,17 @@ use ToddMinerTech\ApptivoPhp\ResultObject;
  * @package ToddMinerTech\apptivo-php-mt
  */
 class EmailUtil
-{
-    /**  @var ApptivoController $aApi The Miner Tech Apptivo package to interact with the Apptivo API */
-    private $aApi; 
-    
-    function __construct(ApptivoController $aApi)
-    {
-        $this->aApi = $aApi;
-    }
-    
-    public function sendEmail(object $emailData): ResultObject
+{    
+    /**
+     * sendEmail
+     * 
+     * Send an email from the Apptivo API
+     * 
+     * @var object $emailData Apptivo email object data
+     * 
+     * return ResultObject returns the generated email object data
+     */
+    public static function sendEmail(object $emailData, ApptivoController $aApi): ResultObject
     {
         //dev temp - original query params
         //'&objectId='.$objectId.'&objectRefId='.$objectRefId.'&isFromApp='.$isFromApp.'&closeObject='.$closeObject.'
@@ -63,8 +64,46 @@ class EmailUtil
         //If we exhausted our retries we fail out here
         return ResultObject::fail('ApptivoPHP: ObjectCrud: create - failed to generate a $returnObj.  $bodyContents ('.$bodyContents.')');
     }
-    function sendEmailBasic($fromEmail,$toEmail,$subject,$body,$assObj,$isFromApp = 'App',$closeObject = 'false',$status = 'Send1') {
-        
-    }
-            
+    
+    /**
+     * sendEmailBasic
+     * 
+     * Wraps sendEmail to build the object for us when we don't care about associations and other details
+     * 
+     * @var string $fromAddress Send email from this address
+     * 
+     * @var string $toAddress Send email to this address
+     * 
+     * return ResultObject returns the generated email object data
+     */
+    public static function sendEmailBasic(string $fromEmail, string|array $toEmail, string $subject, string $body, ApptivoController $aApi): ResultObject
+    {
+        $emailData = new \stdClass;
+        $emailData->fromAddress = [];
+        $fromAddressObj = new \stdClass;
+        $fromAddressObj->emailAddress = $fromEmail;
+        $emailData->fromAddress[] = $fromAddressObj;
+        $emailData->toAddress = [];
+        if(is_array($toEmail)) {
+            foreach($toEmail as $cEmail) {
+                $toAddress = new \stdClass;
+                $toAddress->emailAddress = $cEmail;
+                $emailData->toAddress[] = $toAddress;
+            }
+        }else{
+            $toAddress = new \stdClass;
+            $toAddress->emailAddress = $toEmail;
+            $emailData->toAddress[] = $toAddress;
+        }
+        $emailData->ccAddress = [];
+        $emailData->bccAddress = [];
+        $emailData->subject = $subject;
+        $emailData->message = $body;
+        $emailData->documents = [];
+        $emailData->associations = [];
+        $emailData->labels = [];
+        $emailData->objectRefIds = null;
+        $emailData->status = 'Send1';
+        return self::sendEmail($emailData, $aApi);
+    }     
 }
