@@ -114,11 +114,16 @@ class ObjectDataUtils
                 }
             }else{
                 $attributeDetails->attrValue = $inputObj->$tagName;
+                $attributeDetails->attrObj = $inputObj->$tagName;
                 return ResultObject::success($attributeDetails);
             }    
         } else if (isset($inputObj->customAttributes)){
             for($i = 0; $i < count($inputObj->customAttributes); $i++) {
-                if($inputObj->customAttributes[$i]->customAttributeId == $settingsAttrObj->attributeId) {
+                if(
+                    isset($inputObj->customAttributes[$i]->customAttributeId) &&
+                    isset($settingsAttrObj->attributeId) &&
+                    $inputObj->customAttributes[$i]->customAttributeId == $settingsAttrObj->attributeId
+                ) {
                     $attributeDetails->attrObj = $inputObj->customAttributes[$i];
                     $attributeDetails->attrIndex = $i;
                     switch($settingsAttrObj->attributeTag) {
@@ -585,8 +590,24 @@ class ObjectDataUtils
                     break;
                     case 'assigneeObjectRefName':
                         //IMPROVEMENT Hard-coded to an employee - Add support for team objects at some point
-                        $object->assigneeObjectRefId = \ToddMinerTech\ApptivoPhp\SearchUtils::getEmployeeIdFromName($newValue, $aApi);
+                        $refIdResult = \ToddMinerTech\ApptivoPhp\SearchUtils::getEmployeeIdFromName($newValue, $aApi);
+                        if($refIdResult->isSuccessful) {
+                            return ResultObject::fail('ApptivoPhP: setAssociatedFieldValues: Failed to get Apptivo employee ref id from employee name $newValue ('.$newValue.')   payload:  '.$refIdResult->payload);
+                        }
+                        $object->assigneeObjectRefId = $refIdResult->payload;
                         $object->assigneeObjectId = 8;
+                    break;
+                }
+            break;
+            case 'cases-2204124':
+                switch($tagName) {
+                    case 'caseCustomer':
+                        //IMPROVEMENT Hard-coded to an employee - Add support for team objects at some point
+                        $customerIdResult = \ToddMinerTech\ApptivoPhp\SearchUtils::getCustomerObjFromName($newValue, $aApi);
+                        if(!$customerIdResult->isSuccessful) {
+                            return ResultObject::fail('ApptivoPhP: setAssociatedFieldValues: Failed to get Apptivo customer ref id from customer name $newValue ('.$newValue.')   payload:  '.$customerIdResult->payload);
+                        }
+                        $object->caseCustomerId = $customerIdResult->payload->id;
                     break;
                 }
             break;

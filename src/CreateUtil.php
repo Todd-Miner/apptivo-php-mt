@@ -59,7 +59,7 @@ class CreateUtil
     {
         //Otherwise set the value by detecting if this is a standard or custom attribute first
         $settingsAttrObjResult = $this->aApi->getAttrSettingsObjectFromLabel($fieldLabel, $this->appNameOrId);
-        if(!$settingAttrObjResult->isSuccessful) {
+        if(!$settingsAttrObjResult->isSuccessful) {
             return ResultObject::fail($settingsAttrObjResult->payload);
         }
         $settingsAttrObj = $settingsAttrObjResult->payload;
@@ -84,7 +84,11 @@ class CreateUtil
             }
             $this->object->$tagName = $valueToSet;
         }else{
-            $newAttrObj = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+            $newAttrObjResult = $this->aApi->createNewAttrObjFromLabelAndValue($fieldLabel, $newValue, $this->appNameOrId);
+            if(!$newAttrObjResult->isSuccessful) {
+                return $newAttrObjResult;
+            }
+            $newAttrObj = $newAttrObjResult->payload;
             $this->object->customAttributes[] = $newAttrObj;
         }
         return ResultObject::success();

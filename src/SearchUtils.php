@@ -117,7 +117,7 @@ class SearchUtils
         {
             //IMPROVEMENT - Extract some of this into utils
             $searchResultsResult = $aApi->getAllBySearchText($customerNameToFind, 'customers');
-            if(!$searchResultsResult-isSuccessful) {
+            if(!$searchResultsResult->isSuccessful) {
                 return ResultObject::fail($searchResultsResult->payload);
             }
             $searchResults = $searchResultsResult->payload;

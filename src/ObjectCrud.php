@@ -158,20 +158,15 @@ class ObjectCrud
             return ResultObject::fail('ApptivoPHP: ObjectCrud: update: No $appNameOrId value was provided.');
         }
         $appParams = new \ToddMinerTech\ApptivoPhp\AppParams($appNameOrId);
-        
-        //For contacts, maybe other apps too, attributeName should be singular
-        if(in_array($appNameOrId,['customers','items'])) {
-            $aName = '';
-        }else{
-            $aName = 's';
-        }
-        $attributeNamesStr = '&attributeName'.$aName.'='.urlencode(json_encode($attributeNames));
-        
-        $attributeIdsStr = '&attributeIds='.urlencode(json_encode($attributeIds));
-        
+
         $objIdStr = '';
-        if($appNameOrId !== 'estimates') {
+        if($appNameOrId !== 'estimates' && strpos($appNameOrId, 'cases-') === false) {
             $objIdStr = '&objectId='.$appParams->objectId;
+        }
+        
+        $appIdStr = '';
+        if(strpos($appNameOrId, 'cases-') !== false) {
+            $appIdStr = '&appId='.$appParams->objectId;
         }
         
         $customAttrString = '&isCustomAttributesUpdate=';
@@ -192,16 +187,23 @@ class ObjectCrud
             $appParams->objectUrlName.
             '?a=update'.
             $objIdStr.
+            $appIdStr.
             '&'.$appParams->objectIdName.'='.$objectData->id.
-            $attributeNamesStr.
-            $attributeIdsStr.
             $customAttrString.
             $addressAttrString.
             $extraParams.
             $aApi->getUserNameStr();
         
+        //For contacts, maybe other apps too, attributeName should be singular
+        if(in_array($appNameOrId,['customers', 'items', 'cases']) || strpos($appNameOrId, 'cases-') !== false) {
+            $attributeNameStr = 'attributeName';
+        }else{
+            $attributeNameStr = 'attributeNames';
+        }
         $postFormParams = [
             $appParams->objectDataName => json_encode($objectData),
+            $attributeNameStr => json_encode($attributeNames),
+            'attributeIds' => json_encode($attributeIds),
             'apiKey' => $aApi->getApiKey(),
             'accessKey' => $aApi->getAccessKey()
         ];
@@ -224,7 +226,8 @@ class ObjectCrud
                 return ResultObject::success($decodedApiResponse->responseObject);
             } else if ($decodedApiResponse && isset($decodedApiResponse->customer)) {
                 return ResultObject::success($decodedApiResponse->customer);
-                //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
+                //IMPROVEMENT - See if we can generate a mapped name for every object within AppParams to handle dyanmically.
+                //Not sure if any other apps do it this way.  Might also be different for create vs update etc
             } else if ($decodedApiResponse && isset($decodedApiResponse->csCase)) {
                 return ResultObject::success($decodedApiResponse->csCase);
             }

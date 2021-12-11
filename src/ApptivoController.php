@@ -111,6 +111,11 @@ class ApptivoController
     /* ObjectTableUtils 
      * 
      */  
+    public function createTableSectionAttributeFromLabelRows(string $sectionLabel, array $tableRows, string $appNameOrId): ResultObject
+    {
+        $configData = $this->getConfigData($appNameOrId);
+        return ObjectTableUtils::createTableSectionAttributeFromLabelRows($sectionLabel, $tableRows, $configData);
+    }
     public function getTableSectionRowsFromSectionLabel(string $sectionLabel, object $objectData, string $appNameOrId): ResultObject
     {
         $configData = $this->getConfigData($appNameOrId);

@@ -20,6 +20,37 @@ use ToddMinerTech\DataUtils\StringUtil;
 class ObjectTableUtils
 {
     /**
+     * createTableSectionAttribute
+     * 
+     * Create a new empty table section attribute and insert table rows into it
+     *
+     * @param string $tableSectionLabel The section attribute label for this table
+     *
+     * @param array $tableRows The array of table rows to be inserted into this table
+     *
+     * @param object $inputConfig The Apptivo app config data
+       *
+     * @return ResultObject Will return the new table section attribute with rows included, ready to be inserted/updated in customAttributes array of an object
+     */
+    public static function createTableSectionAttributeFromLabelRows(string $tableSectionLabel, array $tableRows, object $inputConfig): ResultObject
+    {
+        $tableSectionIdResult = self::getTableSectionAttributeIdFromLabel($tableSectionLabel, $inputConfig);
+        if(!$tableSectionIdResult->isSuccessful) {
+            return ResultObject::fail($tableSectionIdResult->payload);
+        }
+        $emptyObj = new \stdClass();
+        $newCustomAttribute = new \stdClass;
+        $newCustomAttribute->customAttributeId = $tableSectionIdResult->payload;
+        $newCustomAttribute->attributeValues = [];
+        $newCustomAttribute->customAttributeType = 'table';
+        $newCustomAttribute->rows = $tableRows;
+        $newCustomAttribute->emptyMap = $emptyObj;
+        $newCustomAttribute->emptyCounterMap = $emptyObj;
+        
+        return ResultObject::success($newCustomAttribute);
+    }
+    
+    /**
      * getTableSectionRowsFromSectionLabel
      * 
      * Get the row data from a table section in and Apptivo object
@@ -113,7 +144,7 @@ class ObjectTableUtils
             return ResultObject::fail('ApptivoPhp: ObjectDataUtils: getTableSectionRowsFromSectionId: $objectData provided was not valid with a customAttributes attribute.  $objectData:  '.json_encode($objectData));
         }
         foreach($objectData->customAttributes as $cAttr) {
-            if($cAttr->customAttributeId == $tableSectionId) {
+            if(isset($cAttr->customAttributeId) && $cAttr->customAttributeId == $tableSectionId) {
                 return ResultObject::success($cAttr->rows);
             }
         }
