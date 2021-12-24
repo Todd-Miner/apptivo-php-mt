@@ -161,17 +161,18 @@ class ApptivoController
     {
         return SearchUtils::getAllBySearchText($searchText, $appNameOrId, $this);
     }
-    
+    public function getAllBySearchTextPaged(string $searchText, string $appNameOrId): ResultObject
+    {
+        return SearchUtils::getAllBySearchTextPaged($searchText, $appNameOrId, $this);
+    }
     public function getEmployeeIdFromName(string $employeeNameToFind): ResultObject
     {
         return SearchUtils::getEmployeeIdFromName($employeeNameToFind, $this);
     }
-    
     public function getCustomerObjFromName(string $customerNameToFind): ResultObject
     {
         return SearchUtils::getCustomerObjFromName($customerNameToFind, $this);
     }
-    
     public function getCustomerIdFromName(string $customerNameToFind): ResultObject
     {
         return SearchUtils::getCustomerIdFromName($customerNameToFind, $this);

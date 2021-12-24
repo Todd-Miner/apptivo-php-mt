@@ -69,7 +69,98 @@ class SearchUtils
                 }
             }
             return ResultObject::fail('ApptivoPHP: SearchUtils: getAllBySearchText: Failed to retrieve a valid response from the Apptivo API. $searchText ('.$searchText.')  $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
-	}        
+	}      
+        
+        /**
+         * getAllBySearchTextPaged
+         * 
+         * Returns an array of all records (up to 10,000, limited by Apptivo API) that are returned by a getAllBySearchText request for any app
+         * Although we have  10k limit, we can double it by reversing the sort order and grabbing the first 10k, then reversing and grabbing up to 10k until we hit the same ID already captured.
+         *
+         * @param string $searchText The text to search with
+         *
+         * @param string $appNameOrId The apptivo name or id used to get app parameters
+         *
+         * @param ApptivoController $aApi Your Apptivo controller object
+         *
+         * @param string $extraParams Optional additional query string parameters.  This string must start with "&" like "&numRecords=50".  Must urlencode any values.
+         *
+         * @return ResultObject Returns an array of search results, should be empty if no results.  Throws an exception if a valid response is not received.
+         */
+        public static function getAllBySearchTextPaged(string $searchText, string $appNameOrId, ApptivoController $aApi, string $extraParams = ''): ResultObject
+        {
+            $allSearchRecords = [];
+            $i = 0;
+            $numRecords = 100;
+            //Get the first batch to pull countOfRecords.  Could optimizie to skip query, just leaving 1 extra query since it's usually not a big deal
+            $batchResultObj = $this->getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex=0&numRecords='.$numRecords.$extraParams);
+            if(!$batchResultObj->isSuccessful) {
+                return $batchResultObj;
+            }
+            $batchResult = $batchResultObj->payload;
+            if($batchResult && $batchResult->countOfRecords > 5000) {
+                $reverseRun = true;
+            }else{
+                $reverseRun = false;
+            }
+            $loopComplete = false;
+            Do {
+                $startIndex = $i * $numRecords;
+                $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex='.$startIndex.'&numRecords='.$numRecords.$extraParams);
+                if(!$batchResultObj->isSuccessful) {
+                    return $batchResultObj;
+                }
+                $batchResult = $batchResultObj->payload;
+                $batchData = $batchResult->data;
+                //Loop opportunities, then loop the attrList in order and add columns even when blank.
+                if(is_array($batchData)) {
+                    $allSearchRecords = array_merge($allSearchRecords,$batchData);
+                    if($startIndex + $numRecords + 1 > $batchResult->countOfRecords || $startIndex + $numRecords + 1 > 4999 || $startIndex + $numRecords + 1 > $maxRecords) {
+                        $loopComplete = true;
+                    }
+                }else{
+                    $loopComplete = true;
+                }
+                $i++;
+            }While ($loopComplete == false);
+            if($reverseRun) {
+                $reverseExtraParams = str_replace('=asc','=desc',$extraParams);
+                $i = 0;
+                $loopComplete = false;
+                Do {
+                    $startIndex = $i * $numRecords;
+                    $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex='.$startIndex.'&numRecords='.$numRecords.$reverseExtraParams);
+                    if(!$batchResultObj->isSuccessful) {
+                        return $batchResultObj;
+                    }
+                    $batchResult = $batchResultObj->payload;
+                    $batchData = $batchResult->data;
+                    //Loop opportunities, then loop the attrList in order and add columns even when blank.
+                    if(is_array($batchData)) {
+                        //For now it's just merging together.  Later on this should be updated to gather the reverse batch, then reverse the sort so we can keep a consistent sort in the final data batch
+                        //One extra condition to detect if the id is already in the array.  Must loop everything since we dont have a singular set of IDs.  Not efficient but best quick solution.
+                        //Check last value first, and if that is a dupe then we check them all and selectively add, otherwise add em all
+                        $filteredBatchData = $batchData;
+                        for($asN = count($allSearchRecords)-1;$asN < 51;$asN--) {
+                            for($bdN=0;$bdN<count($batchData);$bdN++) {
+                                if($allSearchRecords[$asN]->id == $batchData[count($batchData)]->id) {
+                                    unset($filteredBatchData[$bdN]);
+                                    $loopComplete = true;
+                                }
+                            }
+                        }
+                        $allSearchRecords = array_merge($allSearchRecords,$filteredBatchData);
+                        if($startIndex + $numRecords + 1 > $batchResult->countOfRecords || $startIndex + $numRecords + 1 > 4999 || $startIndex + $numRecords + 1 > $maxRecords) {
+                            $loopComplete = true;
+                        }
+                    }else{
+                        $loopComplete = true;
+                    }
+                    $i++;
+                }While ($loopComplete == false);
+            }
+            return ResultObject::success($allSearchRecords);
+        }
         
     /* 
      * Object specific search wrappers
