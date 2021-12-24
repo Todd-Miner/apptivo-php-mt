@@ -93,7 +93,7 @@ class SearchUtils
             $i = 0;
             $numRecords = 100;
             //Get the first batch to pull countOfRecords.  Could optimizie to skip query, just leaving 1 extra query since it's usually not a big deal
-            $batchResultObj = $this->getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex=0&numRecords='.$numRecords.$extraParams);
+            $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex=0&numRecords='.$numRecords.$extraParams);
             if(!$batchResultObj->isSuccessful) {
                 return $batchResultObj;
             }
