@@ -34,9 +34,11 @@ class SearchUtils
          *
          * @param string $extraParams Optional additional query string parameters.  This string must start with "&" like "&numRecords=50".  Must urlencode any values.
          *
+         * @param bool $returnCountAndData Set to true if you want the return value to be an object with data & countOfRecords attributes.  Otherwise only data returned.
+         *
          * @return ResultObject Returns an array of search results, should be empty if no results.  Throws an exception if a valid response is not received.
          */
-        public static function getAllBySearchText(string $searchText, string $appNameOrId, ApptivoController $aApi, string $extraParams = ''): ResultObject
+        public static function getAllBySearchText(string $searchText, string $appNameOrId, ApptivoController $aApi, string $extraParams = '', bool $returnCountAndData = false): ResultObject
         {
             if(!$appNameOrId) {
                 return ResultObject::fail('ApptivoPHP: ObjectCrud: read: No $appNameOrId value was provided.');
@@ -65,7 +67,11 @@ class SearchUtils
                 $decodedApiResponse = json_decode($bodyContents);
                 $returnObj = null;
                 if($decodedApiResponse && $decodedApiResponse->data) {
-                    return ResultObject::success($decodedApiResponse->data);
+                    if($returnCountAndData) {
+                        return ResultObject::success($decodedApiResponse);
+                    }else{
+                        return ResultObject::success($decodedApiResponse->data);
+                    }
                 }
             }
             return ResultObject::fail('ApptivoPHP: SearchUtils: getAllBySearchText: Failed to retrieve a valid response from the Apptivo API. $searchText ('.$searchText.')  $appNameOrId ('.$appNameOrId.')  $bodyContents ('.$bodyContents.')');
@@ -85,15 +91,17 @@ class SearchUtils
          *
          * @param string $extraParams Optional additional query string parameters.  This string must start with "&" like "&numRecords=50".  Must urlencode any values.
          *
+         * @param int $maxRecords Optional Number of records to retrieve before exiting the loop.
+         *
          * @return ResultObject Returns an array of search results, should be empty if no results.  Throws an exception if a valid response is not received.
          */
-        public static function getAllBySearchTextPaged(string $searchText, string $appNameOrId, ApptivoController $aApi, string $extraParams = ''): ResultObject
+        public static function getAllBySearchTextPaged(string $searchText, string $appNameOrId, ApptivoController $aApi, string $extraParams = '', int $maxRecords = 10000): ResultObject
         {
             $allSearchRecords = [];
             $i = 0;
             $numRecords = 100;
             //Get the first batch to pull countOfRecords.  Could optimizie to skip query, just leaving 1 extra query since it's usually not a big deal
-            $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex=0&numRecords='.$numRecords.$extraParams);
+            $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex=0&numRecords='.$numRecords.$extraParams, true);
             if(!$batchResultObj->isSuccessful) {
                 return $batchResultObj;
             }
@@ -106,7 +114,7 @@ class SearchUtils
             $loopComplete = false;
             Do {
                 $startIndex = $i * $numRecords;
-                $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex='.$startIndex.'&numRecords='.$numRecords.$extraParams);
+                $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex='.$startIndex.'&numRecords='.$numRecords.$extraParams, true);
                 if(!$batchResultObj->isSuccessful) {
                     return $batchResultObj;
                 }
@@ -129,7 +137,7 @@ class SearchUtils
                 $loopComplete = false;
                 Do {
                     $startIndex = $i * $numRecords;
-                    $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex='.$startIndex.'&numRecords='.$numRecords.$reverseExtraParams);
+                    $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex='.$startIndex.'&numRecords='.$numRecords.$reverseExtraParams, true);
                     if(!$batchResultObj->isSuccessful) {
                         return $batchResultObj;
                     }
@@ -267,7 +275,7 @@ class SearchUtils
                 $batchData = $batchDataResult->payload->data;
                 if(is_array($batchData)) {
                     $allSearchRecords = array_merge($allSearchRecords,$batchData);
-                    if($batchResult->countOfRecords < $numRecords) {
+                    if($batchDataResult->payload->countOfRecords < $numRecords) {
                         $loopComplete = true;
                     }
                 }else{
