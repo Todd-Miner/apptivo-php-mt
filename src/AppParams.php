@@ -75,7 +75,7 @@ class AppParams
                 $this->objectUrlName = 'customapp';
                 $this->objectDataName = 'customAppData';
                 $this->objectIdName = 'customAppId';
-                $this->objectId = $appNameOrIdParts[1];
+                $this->objectId = intval($appNameOrIdParts[1]);
                 break;
             case 8:
             case 'employees':
