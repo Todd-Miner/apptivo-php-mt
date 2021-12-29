@@ -189,6 +189,35 @@ class ObjectTableUtils
      */
     public static function getTableRowAttrValueFromLabel(string|array $inputLabel, object $inputRowObj, object $inputConfig): ResultObject
     {
+        $tableRowAttrObj = self::getTableRowAttrObjFromLabel($inputLabel, $inputRowObj, $inputConfig);
+        if(!$tableRowAttrObj->isSuccessful) {
+            return $tableRowAttrObj;
+        }
+        if($tableRowAttrObj->payload = null) {
+            return ResultObject::success('');
+        } elseif (isset($tableRowAttrObj->payload->customAttributeValue) && $tableRowAttrObj->payload->customAttributeValue) {
+            return ResultObject::success($tableRowAttrObj->payload->customAttributeValue);
+        } elseif (isset($tableRowAttrObj->payload->attributeValues) && isset($tableRowAttrObj->payload->attributeValues[0]) && isset($tableRowAttrObj->payload->attributeValues[0]->attributeValue)) {
+            return ResultObject::success($tableRowAttrObj->payload->attributeValues[0]->attributeValue);
+        }
+        return ResultObject::success('');
+    }
+    
+    /**
+     * getTableRowAttObjFromLabel
+     * 
+     * Get an attribute object from within a table row object
+     *
+     * @param string $inputLabel custom attribute label
+     *
+     * @param object $inputRowObj The object data for the table row
+     *
+     * @param object $inputConfig The Apptivo app config
+       *
+     * @return ResultObject The value of the attribute
+     */
+    public static function getTableRowAttrObjFromLabel(string|array $inputLabel, object $inputRowObj, object $inputConfig): ResultObject
+    {
         if(!$inputRowObj && $inputRowObj->columns) {
             return ResultObject::fail('ApptivoPhp: ObjectTableUtils: getTableRowAttrValueFromLabel: This table row had no columns availalbe.');
         }
@@ -200,15 +229,11 @@ class ObjectTableUtils
         for($col=0;$col<count($inputRowObj->columns);$col++) {
             if($inputRowObj->columns[$col]->customAttributeId == $customAttributeIdToFind) {
                 //logIt('returning customAttributeValue ('.$inputRowObj->columns[$col]->customAttributeValue.') from this json: '.json_encode($inputRowObj->columns[$col]));
-                if(isset($inputRowObj->columns[$col]->customAttributeValue) && $inputRowObj->columns[$col]->customAttributeValue) {
-                    return ResultObject::success($inputRowObj->columns[$col]->customAttributeValue);
-                }elseif(isset($inputRowObj->columns[$col]->attributeValues) && isset($inputRowObj->columns[$col]->attributeValues[0]) && isset($inputRowObj->columns[$col]->attributeValues[0]->attributeValue)) {
-                    return ResultObject::success($inputRowObj->columns[$col]->attributeValues[0]->attributeValue);
-                }
+                return ResultObject::success($inputRowObj->columns[$col]);
             }
         }
-        //If we cannot locate this column then we provide an empty string
-        return ResultObject::success('');
+        //If we cannot locate this column then we provide a null response
+        return ResultObject::success(null);
     }
     
     /**
