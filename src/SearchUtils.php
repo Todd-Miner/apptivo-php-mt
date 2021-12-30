@@ -99,7 +99,7 @@ class SearchUtils
         {
             $allSearchRecords = [];
             $i = 0;
-            $numRecords = 100;
+            $numRecords = 250;
             //Get the first batch to pull countOfRecords.  Could optimizie to skip query, just leaving 1 extra query since it's usually not a big deal
             $batchResultObj = self::getAllBySearchText($searchText, $appNameOrId, $aApi, '&startIndex=0&numRecords='.$numRecords.$extraParams, true);
             if(!$batchResultObj->isSuccessful) {
