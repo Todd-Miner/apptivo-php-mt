@@ -193,7 +193,7 @@ class ObjectTableUtils
         if(!$tableRowAttrObj->isSuccessful) {
             return $tableRowAttrObj;
         }
-        if($tableRowAttrObj->payload = null) {
+        if($tableRowAttrObj->payload == null) {
             return ResultObject::success('');
         } elseif (isset($tableRowAttrObj->payload->customAttributeValue) && $tableRowAttrObj->payload->customAttributeValue) {
             return ResultObject::success($tableRowAttrObj->payload->customAttributeValue);
