@@ -687,7 +687,7 @@ class ObjectDataUtils
             //Proceed if we are checking all attributes, or if if its an array then we only proceed for a table that matches our label
             if( (!is_array($inputLabel)) || (is_array($inputLabel) && StringUtil::sComp($cSection->label,$inputLabel[0])) ) {
                 foreach($sectionAttributes as $cAttr) {
-                    if(!$cAttr->label) {
+                    if(!$cAttr->label || !isset($cAttr->label->modifiedLabel)) {
                         continue;
                     }
                     $labelName = $cAttr->label->modifiedLabel;
