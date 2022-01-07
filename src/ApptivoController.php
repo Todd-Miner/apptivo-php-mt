@@ -174,9 +174,10 @@ class ApptivoController
     {
         return SearchUtils::getAllBySearchText($viewCode, $appNameOrId, $this);
     }
-    public function getAllByCustomViewPaged(string $viewCode, string $appNameOrId): ResultObject
+    public function getAllByCustomViewPaged(string $viewCode, string $appNameOrId, string $extraParams = '', int $maxRecords = 10000): ResultObject
     {
-        return SearchUtils::getAllByCustomViewPaged($viewCode, $appNameOrId, $this);
+        //IMPROVEMENT Provide some default sort based on app name, since the sort col names change from app to app
+        return SearchUtils::getAllByCustomViewPaged($viewCode, $appNameOrId, $this, $extraParams, $maxRecords);
     }
     public function getEmployeeIdFromName(string $employeeNameToFind): ResultObject
     {
