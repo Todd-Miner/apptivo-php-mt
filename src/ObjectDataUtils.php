@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ToddMinerTech\ApptivoPhp;
 
 use ToddMinerTech\ApptivoPhp\ApptivoController;
-use ToddMinerTech\ApptivoPhp\ResultObject;
+use ToddMinerTech\MinerTechDataUtils\ResultObject;
 use ToddMinerTech\ApptivoPhp\SearchUtils;
 use ToddMinerTech\DataUtils\StringUtil;
 

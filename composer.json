@@ -19,7 +19,7 @@
     "require": {
         "php" : ">=8.0",
         "guzzlehttp/guzzle": "^7.0",
-        "toddminertech/minertechdatautils": "~1.0"
+        "toddminertech/minertechdatautils": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit" : ">=8.0"

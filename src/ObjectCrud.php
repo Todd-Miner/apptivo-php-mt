@@ -7,7 +7,7 @@ namespace ToddMinerTech\ApptivoPhp;
 use ToddMinerTech\ApptivoPhp\AppParams;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
 use ToddMinerTech\ApptivoPhp\Exceptions\RuntimeGetConfigException;
-use ToddMinerTech\ApptivoPhp\ResultObject;
+use ToddMinerTech\MinerTechDataUtils\ResultObject;
 
 /**
  * Class ObjectCrud

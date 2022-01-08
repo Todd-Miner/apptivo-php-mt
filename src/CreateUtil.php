@@ -6,7 +6,7 @@ namespace ToddMinerTech\ApptivoPhp;
 
 use ToddMinerTech\DataUtils\StringUtil;
 use ToddMinerTech\DataUtils\ArrUtil;
-use ToddMinerTech\ApptivoPhp\ResultObject;
+use ToddMinerTech\MinerTechDataUtils\ResultObject;
 use ToddMinerTech\ApptivoPhp\Exceptions;
 
 /**
