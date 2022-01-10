@@ -2,7 +2,7 @@
 
 Contributions are **welcome** and will be fully **credited**.
 
-We accept contributions via Pull Requests on [Github](https://github.com/Todd-Miner/ApptivoPhp).
+We accept contributions via Pull Requests on [Github](https://github.com/ToddMinerTech/ApptivoPhp).
 
 
 ## Pull Requests

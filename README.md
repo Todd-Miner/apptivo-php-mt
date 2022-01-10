@@ -35,10 +35,10 @@ Sample command: php phpDocumentor.phar -d d:\www\apptivophp -f src -t documentat
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/Todd-Miner/ApptivoPhp.svg?style=flat-square
+[ico-version]: https://img.shields.io/packagist/v/ToddMinerTech/ApptivoPhp.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/Todd-Miner/ApptivoPhp.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/ToddMinerTech/ApptivoPhp.svg?style=flat-square
 
-[link-packagist]: https://packagist.org/packages/Todd-Miner/ApptivoPhp
-[link-downloads]: https://packagist.org/packages/Todd-Miner/ApptivoPhp
+[link-packagist]: https://packagist.org/packages/ToddMinerTech/ApptivoPhp
+[link-downloads]: https://packagist.org/packages/ToddMinerTech/ApptivoPhp
 [link-author]: https://github.com/Todd-Miner
