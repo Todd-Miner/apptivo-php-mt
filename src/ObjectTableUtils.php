@@ -15,7 +15,7 @@ use ToddMinerTech\DataUtils\StringUtil;
  *
  * Class to help retrieve and manipulate data from tables within Apptivo objects.  Designed to be called statically from ApptivoController
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class ObjectTableUtils
 {

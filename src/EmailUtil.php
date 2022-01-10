@@ -14,7 +14,7 @@ use ToddMinerTech\MinerTechDataUtils\ResultObject;
  *
  * Class to help manage retrieval, processing, and delivery of emails using the Apptivo API
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class EmailUtil
 {    

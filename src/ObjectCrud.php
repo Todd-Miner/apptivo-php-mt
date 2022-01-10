@@ -14,7 +14,7 @@ use ToddMinerTech\MinerTechDataUtils\ResultObject;
  *
  * Class to create, read, update, or delete apptivo objects
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class ObjectCrud
 {

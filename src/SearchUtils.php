@@ -13,7 +13,7 @@ use ToddMinerTech\DataUtils\StringUtil;
  *
  * Class to perform any search functions along with processing search results from the Apptiv API.  Designed to be called statically from ApptivoController
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class SearchUtils
 {

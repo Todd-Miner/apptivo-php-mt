@@ -9,7 +9,7 @@ namespace ToddMinerTech\ApptivoPhp;
  *
  * Class to map an app name/id to static values that are required for each app.  No raw source for these right now, manually tested and documented.
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class AppParams
 {

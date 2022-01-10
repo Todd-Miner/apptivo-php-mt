@@ -13,7 +13,7 @@ use ToddMinerTech\DataUtils\StringUtil;
  *
  * Manages functionas around authentication or other Apptivo system interactions.  Designed to be called statically from ApptivoController
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class SystemUtils
 {

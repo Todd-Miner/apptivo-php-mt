@@ -14,7 +14,7 @@ use ToddMinerTech\MinerTechDataUtils\ResultObject;
  *
  * Class to help manage the process of updating an Apptivo update.  Stores the object data and stores key attributes in a predictable way to be digested by the update method.
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class UpdateUtil
 {

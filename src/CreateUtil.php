@@ -14,7 +14,7 @@ use ToddMinerTech\ApptivoPhp\Exceptions;
  *
  * Class to help manage the process of creating new records in Apptivo.
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class CreateUtil
 {

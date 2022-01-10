@@ -16,7 +16,7 @@ use GuzzleHttp\Psr7\Request;
  *
  * Controls all Apptivo API queries and data handling functions
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class ApptivoController
 {

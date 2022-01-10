@@ -14,7 +14,7 @@ use ToddMinerTech\DataUtils\StringUtil;
  *
  * Class to perform processing tasks related to object record such as retreiving or updating a specific field value.  Designed to be called statically from ApptivoController
  *
- * @package ToddMinerTech\apptivo-php-mt
+ * @package ToddMinerTech\ApptivoPhp
  */
 class ObjectDataUtils
 {
