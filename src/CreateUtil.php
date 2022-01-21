@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ToddMinerTech\ApptivoPhp;
 
-use ToddMinerTech\DataUtils\StringUtil;
-use ToddMinerTech\DataUtils\ArrUtil;
+use ToddMinerTech\MinerTechDataUtils\StringUtil;
+use ToddMinerTech\MinerTechDataUtils\ArrUtil;
 use ToddMinerTech\MinerTechDataUtils\ResultObject;
 use ToddMinerTech\ApptivoPhp\Exceptions;
 

@@ -6,7 +6,7 @@ namespace ToddMinerTech\ApptivoPhp;
 
 use Exception;
 use ToddMinerTech\ApptivoPhp\ApptivoController;
-use ToddMinerTech\DataUtils\StringUtil;
+use ToddMinerTech\MinerTechDataUtils\StringUtil;
 
 /**
  * Class SystemUtils

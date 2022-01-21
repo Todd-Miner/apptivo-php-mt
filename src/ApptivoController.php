@@ -9,6 +9,7 @@ use ToddMinerTech\ApptivoPhp\ObjectCrud;
 use ToddMinerTech\ApptivoPhp\ObjectDataUtils;
 use ToddMinerTech\ApptivoPhp\ObjectTableUtils;
 use ToddMinerTech\ApptivoPhp\SystemUtils;
+use ToddMinerTech\MinerTechDataUtils\ResultObject;
 use GuzzleHttp\Psr7\Request;
 
 /**

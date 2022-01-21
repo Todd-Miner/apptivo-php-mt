@@ -8,7 +8,7 @@ use ToddMinerTech\ApptivoPhp\ApptivoController;
 use ToddMinerTech\ApptivoPhp\ObjectDataUtils;
 use ToddMinerTech\MinerTechDataUtils\ResultObject;
 use ToddMinerTech\ApptivoPhp\SearchUtils;
-use ToddMinerTech\DataUtils\StringUtil;
+use ToddMinerTech\MinerTechDataUtils\StringUtil;
 
 /**
  * Class ObjectTableUtils
