@@ -340,7 +340,7 @@ class SearchUtils
         public static function getEmployeeIdFromName(string $employeeNameToFind, ApptivoController $aApi): ResultObject
         {
             $searchResultsResult = $aApi->getAllBySearchText($employeeNameToFind, 'employees');
-            if(!$searchResultsResult-isSuccessful) {
+            if(!$searchResultsResult->isSuccessful) {
                 return ResultObject::fail($searchResultsResult->payload);
             }
             $searchResults = $searchResultsResult->payload;
