@@ -398,7 +398,7 @@ class ObjectDataUtils
                 //Detect if we set an array of values or a single value
                 if(count($selectedValues) > 0) {
                     foreach($selectedValues as $cVal) {
-                        $valueObj = new stdClass;
+                        $valueObj = new \stdClass;
                         $valueObj->attributeId = $cVal->optionId;
                         $valueObj->attributeValue =  $cVal->optionObject;
                         //$valueObj->shape =  '';
@@ -407,7 +407,7 @@ class ObjectDataUtils
                         unset($valueObj);
                     }
                 }else{
-                    $valueObj = new stdClass;
+                    $valueObj = new \stdClass;
                     $valueObj->attributeId = $selectedValueId;
                     $valueObj->attributeValue = $selectedValue;
                     //$valueObj->shape =  ''; //suspected they don't do anything, not sure exact conditions where these are present in Apptivo queries
@@ -456,14 +456,14 @@ class ObjectDataUtils
                 //Detect if we set an array of values or a single value
                 if(count($selectedValues) > 0) {
                     foreach($selectedValues as $cVal) {
-                        $valueObj = new stdClass;
+                        $valueObj = new \stdClass;
                         $valueObj->attributeId = $cVal->optionId;
                         $valueObj->attributeValue =  $cVal->optionObject;
                         $newAttr->attributeValues[] = $valueObj;	
                         unset($valueObj);
                     }
                 }else{
-                    $valueObj = new stdClass;
+                    $valueObj = new \stdClass;
                     $valueObj->attributeId = $selectedValueId;
                     $valueObj->attributeValue = $selectedValue;
                     $newAttr->attributeValues[] = $valueObj;
