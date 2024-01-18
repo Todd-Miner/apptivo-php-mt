@@ -86,6 +86,8 @@ class ObjectCrud
                 //IMPROVEMENT - See if we can generate a mapped name for every day to handle dyanmically.  Not sure if any other apps do it this way.
             } else if ($decodedApiResponse && isset($decodedApiResponse->csCase)) {
                 return ResultObject::success($decodedApiResponse->csCase);
+            } else if ($decodedApiResponse && isset($decodedApiResponse->contact)) {
+                return ResultObject::success($decodedApiResponse->contact);
             }
         }
         //If we exhausted our retries we fail out here
